@@ -36,3 +36,6 @@
 
 # CMake
 cmake-*/
+
+# Test DB files
+*.kv

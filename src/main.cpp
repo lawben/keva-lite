@@ -1,5 +1,8 @@
 #include <iostream>
+#include "keva_lite.hpp"
 
 int main() {
-  std::cout << "Hello, World!" << std::endl;
+
+  keva::KevaLite<uint32_t, uint32_t> kv{"blub.kv"};
+
 }
