@@ -55,15 +55,12 @@ V KevaLite<K, V>::_read_file_value(FileValue file_value) {
 
 template <typename K, typename V>
 FileValue KevaLite<K, V>::_write_file_value(V value) {
-  auto num_bytes = sizeof(V);
-
+  const auto num_bytes = sizeof(V);
   FileValue file_value;
   file_value.reserve(num_bytes);
 
-  auto value_chars = reinterpret_cast<char*>(&value);
-  for (auto byte_offset = 0u; byte_offset < num_bytes; ++byte_offset) {
-    file_value.push_back(value_chars[byte_offset]);
-  }
+  const auto value_chars = reinterpret_cast<char*>(&value);
+  file_value.insert(file_value.end(), value_chars, value_chars + num_bytes);
 
   return file_value;
 }
