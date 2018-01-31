@@ -3,7 +3,7 @@
 namespace keva {
 
 class Noncopyable {
- protected:
+ public:
   Noncopyable() = default;
   Noncopyable(Noncopyable&&) = default;
   Noncopyable& operator=(Noncopyable&&) = default;

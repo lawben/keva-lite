@@ -6,4 +6,5 @@ int main() {
 
   keva::KevaLite<uint32_t, uint32_t> kv{"blub.kv"};
 
+  kv.get(0);
 }

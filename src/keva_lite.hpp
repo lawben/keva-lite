@@ -13,13 +13,13 @@ class KevaLite : public Noncopyable {
   explicit KevaLite(std::string db_file_name)
     : _db_file_name(std::move(db_file_name)), _db_file_manager{_db_file_name} {}
 
-  V get(K key);
-  void put(K key, V value);
-  void remove(K key);
+  V get(const K& key);
+  void put(const K& key, const V& value);
+  void remove(const K& key);
 
  protected:
   V _read_file_value(FileValue file_value);
-  FileValue _write_file_value(V value);
+  FileValue _write_file_value(const V& value);
 
 
   const std::string _db_file_name;
@@ -31,18 +31,21 @@ class KevaLite : public Noncopyable {
 // Implementation
 
 template <typename K, typename V>
-V KevaLite<K, V>::get(K key) {
+V KevaLite<K, V>::get(const K& key) {
   auto result = _db_file_manager.get(key);
+  if (result.empty()) {
+    throw std::runtime_error("Key '" + std::to_string(key) + "' not found.");
+  }
   return _read_file_value(std::move(result));
 }
 
 template <typename K, typename V>
-void KevaLite<K, V>::put(K key, V value) {
+void KevaLite<K, V>::put(const K& key, const V& value) {
   _db_file_manager.put(key, _write_file_value(std::move(value)));
 }
 
 template <typename K, typename V>
-void KevaLite<K, V>::remove(K key) {
+void KevaLite<K, V>::remove(const K& key) {
   _db_file_manager.remove(key);
 }
 
@@ -54,7 +57,7 @@ V KevaLite<K, V>::_read_file_value(FileValue file_value) {
 }
 
 template <typename K, typename V>
-FileValue KevaLite<K, V>::_write_file_value(V value) {
+FileValue KevaLite<K, V>::_write_file_value(const V& value) {
   const auto num_bytes = sizeof(V);
   FileValue file_value;
   file_value.reserve(num_bytes);

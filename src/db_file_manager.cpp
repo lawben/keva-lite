@@ -24,14 +24,14 @@ DBFileManager::DBFileManager(std::string db_file_name) : _db_file_name(std::move
 DBHeader DBFileManager::_init_db() {
   DBHeader db_header{};
   db_header.version = 1;
-  db_header.key_type = 0;
-  db_header.value_type = 0;
+  db_header.key_size = 4;
+  db_header.value_size = 4;
   db_header.keys_per_node = 10; // TODO: correct number of keys
   db_header.root_offset = sizeof(DBHeader);
 
   _write_value(db_header.version);
-  _write_value(db_header.key_type);
-  _write_value(db_header.value_type);
+  _write_value(db_header.key_size);
+  _write_value(db_header.value_size);
   _write_value(db_header.keys_per_node);
   _write_value(db_header.root_offset);
   _db_file.flush();
@@ -44,8 +44,8 @@ DBHeader DBFileManager::_load_db() {
 
   DBHeader db_header{};
   db_header.version = _read_value<uint16_t>();
-  db_header.key_type = _read_value<uint16_t>();
-  db_header.value_type = _read_value<uint16_t>();
+  db_header.key_size = _read_value<uint16_t>();
+  db_header.value_size = _read_value<uint32_t>();
   db_header.keys_per_node = _read_value<uint16_t>();
   db_header.root_offset = _read_value<FileOffset>();
 
@@ -56,9 +56,9 @@ BPNode DBFileManager::_init_root() {
   BPNodeHeader node_header{};
   node_header.node_id = _db_header.root_offset;
   node_header.is_leaf = true;
-  node_header.parent_id = 0;  // no parent
-  node_header.next_leaf = 0;  // no neighbours
-  node_header.previous_leaf = 0;
+  node_header.parent_id = InvalidNodeID;  // no parent
+  node_header.next_leaf = InvalidNodeID;  // no neighbours
+  node_header.previous_leaf = InvalidNodeID;
   node_header.key_size = 4;
   node_header.num_keys = 0;
 
@@ -112,6 +112,42 @@ void DBFileManager::_write_node(const BPNode& node, FileOffset offset) {
   _write_values(node.children());
   _write_values(dummy_children);  // Fill rest of space with dummy children
   _db_file.flush();
+}
+
+FileValue DBFileManager::get(FileKey key) {
+  auto* node = _root.get();
+  BPNode child{{}, {}, {}};
+
+  // Iterate through children until leaf is found
+  while (true) {
+    if (node->header().is_leaf) {
+      const auto value_pos = node->find_value(key);
+      return _get_value(value_pos);
+    } else {
+      const auto child_pos = node->find_child(key);
+      child = _load_node(child_pos);
+      node = &child;
+    }
+  }
+}
+
+FileValue DBFileManager::_get_value(const NodeID value_pos) {
+  // No value to be read
+  if (value_pos == InvalidNodeID) return FileValue();
+
+  _db_file.seekg(value_pos);
+
+  auto value_size = _db_header.value_size;
+
+  // Variable size (e.g. string or raw data type). Read size of upcoming data block
+  if (value_size == 0) {
+    value_size = _read_value<uint32_t>();
+  }
+
+  FileValue value(value_size);
+  _db_file.read(value.data(), value_size);
+
+  return value;
 }
 
 }  // namespace keva
