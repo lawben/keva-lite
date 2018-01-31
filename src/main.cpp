@@ -4,7 +4,8 @@
 
 int main() {
 
-  keva::KevaLite<uint32_t, uint32_t> kv{"blub.kv"};
+  keva::KevaLite<uint32_t, uint64_t> kv{"blub.kv"};
 
-  kv.get(0);
+  kv.put(1, 100);
+  std::cout << kv.get(1);
 }

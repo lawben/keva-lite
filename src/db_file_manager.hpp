@@ -9,7 +9,6 @@
 
 namespace keva {
 
-using FileValue = std::vector<char>;
 using FileOffset = NodeID;
 
 struct DBHeader {
@@ -22,11 +21,11 @@ struct DBHeader {
 
 class DBFileManager : public Noncopyable {
  public:
-  explicit DBFileManager(std::string db_file_name);
+  DBFileManager(std::string db_file_name, uint16_t key_size, uint32_t value_size);
 
   FileValue get(FileKey key);
 
-  void put(FileKey key, FileValue value);
+  void put(FileKey key, const FileValue& value);
 
   void remove(FileKey key);
 
@@ -35,10 +34,13 @@ class DBFileManager : public Noncopyable {
   DBHeader _load_db();
   BPNode _init_root();
 
+  uint32_t _get_file_size();
+
   BPNode _load_node(FileOffset offset);
   void _write_node(const BPNode& node, FileOffset offset);
 
   FileValue _get_value(NodeID value_pos);
+  FileOffset _insert_value(const FileValue& value);
 
   template <typename T>
   T _read_value();
@@ -51,11 +53,17 @@ class DBFileManager : public Noncopyable {
 
   template <typename T>
   void _write_values(const std::vector<T>& values);
+
   const std::string _db_file_name;
   std::fstream _db_file;
   bool _new_db;
   DBHeader _db_header;
   std::unique_ptr<BPNode> _root;
+
+  FileOffset _next_position = 0;
+
+  uint16_t _key_size;
+  uint32_t _value_size;
 };
 
 

@@ -12,4 +12,12 @@ class Noncopyable {
   const Noncopyable& operator=(const Noncopyable&) = delete;
 };
 
+template <typename T>
+inline void Assert(const T& value, const std::string& msg) {
+  if (static_cast<bool>(value)) {
+    return;
+  }
+  throw std::logic_error(msg);
+}
+
 }  // namespace keva

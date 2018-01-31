@@ -6,6 +6,7 @@
 namespace keva {
 
 using FileKey = int64_t;
+using FileValue = std::vector<char>;
 using NodeID = uint32_t;
 
 const NodeID InvalidNodeID = 0;
@@ -29,11 +30,17 @@ class BPNode : public Noncopyable {
   const std::vector<FileKey>& keys() const;
   const std::vector<NodeID>& children() const;
 
+  BPNodeHeader& mutable_header();
+  std::vector<FileKey>& mutable_keys();
+  std::vector<NodeID>& mutable_children();
+
   // Finds the position of the next child to look at
   NodeID find_child(FileKey key) const;
 
   // Finds the position of the value for the key or 0 if not found
   NodeID find_value(FileKey key) const;
+
+  uint16_t find_insert_position(FileKey key) const;
 
  protected:
   BPNodeHeader _header;

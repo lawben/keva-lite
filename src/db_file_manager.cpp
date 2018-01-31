@@ -1,11 +1,11 @@
 #include "db_file_manager.hpp"
 
 #include <iostream>
-#include <cassert>
 
 namespace keva {
 
-DBFileManager::DBFileManager(std::string db_file_name) : _db_file_name(std::move(db_file_name)) {
+DBFileManager::DBFileManager(std::string db_file_name, uint16_t key_size, uint32_t value_size)
+  : _db_file_name(std::move(db_file_name)), _key_size(key_size), _value_size(value_size) {
   std::ifstream exist_check(_db_file_name);
   _new_db = !exist_check.good();
 
@@ -19,13 +19,59 @@ DBFileManager::DBFileManager(std::string db_file_name) : _db_file_name(std::move
     _db_header = _load_db();
     _root = std::make_unique<BPNode>(_load_node(_db_header.root_offset));
   }
+
+  _next_position = _get_file_size();
+}
+
+FileValue DBFileManager::get(FileKey key) {
+  auto* node = _root.get();
+  BPNode child{{}, {}, {}};
+
+  // Iterate through children until leaf is found
+  while (true) {
+    if (node->header().is_leaf) {
+      const auto value_pos = node->find_value(key);
+      return _get_value(value_pos);
+    } else {
+      const auto child_pos = node->find_child(key);
+      child = _load_node(child_pos);
+      node = &child;
+    }
+  }
+}
+
+void DBFileManager::put(FileKey key, const FileValue& value) {
+  auto* node = _root.get();
+  std::vector<BPNode> children;
+  children.reserve(10);
+
+  while (true) {
+    if (node->header().is_leaf) {
+      const auto insert_pos = node->find_insert_position(key);
+      auto& keys = node->mutable_keys();
+      auto& values = node->mutable_children();
+
+      // Write new value to file and get its position
+      const auto value_pos = _insert_value(value);
+
+      keys.insert(keys.begin() + insert_pos, key);
+      values.insert(values.begin() + insert_pos, value_pos);
+      node->mutable_header().num_keys++;
+
+      return _write_node(*node, node->header().node_id);
+    } else {
+      const auto child_pos = node->find_child(key);
+      children.push_back(_load_node(child_pos));
+      node = &children.back();
+    }
+  }
 }
 
 DBHeader DBFileManager::_init_db() {
   DBHeader db_header{};
   db_header.version = 1;
-  db_header.key_size = 4;
-  db_header.value_size = 4;
+  db_header.key_size = _key_size;
+  db_header.value_size = _value_size;
   db_header.keys_per_node = 10; // TODO: correct number of keys
   db_header.root_offset = sizeof(DBHeader);
 
@@ -48,6 +94,9 @@ DBHeader DBFileManager::_load_db() {
   db_header.value_size = _read_value<uint32_t>();
   db_header.keys_per_node = _read_value<uint16_t>();
   db_header.root_offset = _read_value<FileOffset>();
+
+  Assert(db_header.key_size == _key_size, "Database file contains different key type than specified.");
+  Assert(db_header.value_size == _value_size, "Database file contains different value type than specified.");
 
   return db_header;
 }
@@ -114,23 +163,6 @@ void DBFileManager::_write_node(const BPNode& node, FileOffset offset) {
   _db_file.flush();
 }
 
-FileValue DBFileManager::get(FileKey key) {
-  auto* node = _root.get();
-  BPNode child{{}, {}, {}};
-
-  // Iterate through children until leaf is found
-  while (true) {
-    if (node->header().is_leaf) {
-      const auto value_pos = node->find_value(key);
-      return _get_value(value_pos);
-    } else {
-      const auto child_pos = node->find_child(key);
-      child = _load_node(child_pos);
-      node = &child;
-    }
-  }
-}
-
 FileValue DBFileManager::_get_value(const NodeID value_pos) {
   // No value to be read
   if (value_pos == InvalidNodeID) return FileValue();
@@ -148,6 +180,24 @@ FileValue DBFileManager::_get_value(const NodeID value_pos) {
   _db_file.read(value.data(), value_size);
 
   return value;
+}
+
+FileOffset DBFileManager::_insert_value(const FileValue& value) {
+  const auto insert_pos = _next_position;
+  _db_file.seekp(insert_pos);
+
+  _write_values(value);
+  _db_file.flush();
+
+  _next_position += value.size();
+  return insert_pos;
+}
+
+uint32_t DBFileManager::_get_file_size() {
+  _db_file.seekg(0, std::ios_base::beg);
+  std::ifstream::pos_type begin_pos = _db_file.tellg();
+  _db_file.seekg(0, std::ios_base::end);
+  return static_cast<uint32_t>(_db_file.tellg() - begin_pos);
 }
 
 }  // namespace keva
