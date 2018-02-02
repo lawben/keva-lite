@@ -1,15 +1,10 @@
 #pragma once
 
 #include <vector>
+
 #include "utils.hpp"
 
 namespace keva {
-
-using FileKey = int64_t;
-using FileValue = std::vector<char>;
-using NodeID = uint32_t;
-
-const NodeID InvalidNodeID = 0;
 
 struct BPNodeHeader {
   NodeID node_id;

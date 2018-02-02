@@ -6,22 +6,20 @@
 
 #include "bp_node.hpp"
 #include "utils.hpp"
+#include "types.hpp"
 
 namespace keva {
 
-using FileOffset = NodeID;
-
 struct DBHeader {
   uint16_t version;
-  uint16_t key_size;
-  uint32_t value_size;
+  uint16_t value_size;
   uint16_t keys_per_node;
   FileOffset root_offset;
 };
 
 class DBFileManager : public Noncopyable {
  public:
-  DBFileManager(std::string db_file_name, uint16_t key_size, uint32_t value_size);
+  DBFileManager(std::string db_file_name, uint16_t value_size);
 
   FileValue get(FileKey key);
 
@@ -62,10 +60,8 @@ class DBFileManager : public Noncopyable {
 
   FileOffset _next_position = 0;
 
-  uint16_t _key_size;
-  uint32_t _value_size;
+  uint16_t _value_size;
 };
-
 
 template <typename T>
 T DBFileManager::_read_value() {
@@ -81,7 +77,6 @@ inline bool DBFileManager::_read_value() {
   _db_file.read(reinterpret_cast<char*>(&value), sizeof(uint8_t));
   return static_cast<bool>(value);
 }
-
 
 template <typename T>
 std::vector<T> DBFileManager::_read_values(uint32_t count) {

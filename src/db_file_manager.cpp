@@ -4,8 +4,8 @@
 
 namespace keva {
 
-DBFileManager::DBFileManager(std::string db_file_name, uint16_t key_size, uint32_t value_size)
-  : _db_file_name(std::move(db_file_name)), _key_size(key_size), _value_size(value_size) {
+DBFileManager::DBFileManager(std::string db_file_name, uint16_t value_size)
+  : _db_file_name(std::move(db_file_name)), _value_size(value_size) {
   std::ifstream exist_check(_db_file_name);
   _new_db = !exist_check.good();
 
@@ -70,13 +70,11 @@ void DBFileManager::put(FileKey key, const FileValue& value) {
 DBHeader DBFileManager::_init_db() {
   DBHeader db_header{};
   db_header.version = 1;
-  db_header.key_size = _key_size;
   db_header.value_size = _value_size;
   db_header.keys_per_node = 10; // TODO: correct number of keys
   db_header.root_offset = sizeof(DBHeader);
 
   _write_value(db_header.version);
-  _write_value(db_header.key_size);
   _write_value(db_header.value_size);
   _write_value(db_header.keys_per_node);
   _write_value(db_header.root_offset);
@@ -90,12 +88,10 @@ DBHeader DBFileManager::_load_db() {
 
   DBHeader db_header{};
   db_header.version = _read_value<uint16_t>();
-  db_header.key_size = _read_value<uint16_t>();
-  db_header.value_size = _read_value<uint32_t>();
+  db_header.value_size = _read_value<uint16_t>();
   db_header.keys_per_node = _read_value<uint16_t>();
   db_header.root_offset = _read_value<FileOffset>();
 
-  Assert(db_header.key_size == _key_size, "Database file contains different key type than specified.");
   Assert(db_header.value_size == _value_size, "Database file contains different value type than specified.");
 
   return db_header;
@@ -168,17 +164,13 @@ FileValue DBFileManager::_get_value(const NodeID value_pos) {
   if (value_pos == InvalidNodeID) return FileValue();
 
   _db_file.seekg(value_pos);
-
   auto value_size = _db_header.value_size;
 
   // Variable size (e.g. string or raw data type). Read size of upcoming data block
-  if (value_size == 0) {
-    value_size = _read_value<uint32_t>();
-  }
+  const auto num_bytes = (value_size == 0) ? _read_value<uint32_t>() : value_size;
 
-  FileValue value(value_size);
-  _db_file.read(value.data(), value_size);
-
+  FileValue value(num_bytes);
+  _db_file.read(value.data(), num_bytes);
   return value;
 }
 

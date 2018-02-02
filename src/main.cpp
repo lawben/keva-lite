@@ -4,8 +4,13 @@
 
 int main() {
 
-  keva::KevaLite<uint32_t, uint64_t> kv{"blub.kv"};
+  keva::KevaLite<int32_t, std::string> kv{"blub.kv"};
 
-  kv.put(1, 100);
-  std::cout << kv.get(1);
+  kv.put(1, "bla");
+  std:: cout << kv.get(1) << std::endl;
+
+  kv.put(2, "blub");
+  std::cout << kv.get(2) << std::endl;
+
+  remove("blub.kv");
 }

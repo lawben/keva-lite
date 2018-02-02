@@ -13,6 +13,7 @@ set (
         src/keva_lite.cpp
         src/keva_lite.hpp
         src/main.cpp
+        src/types.hpp
         src/utils.hpp
 )
 
