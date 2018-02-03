@@ -72,7 +72,7 @@ DBHeader DBFileManager::_init_db() {
   db_header.version = 1;
   db_header.value_size = _value_size;
   db_header.keys_per_node = 10; // TODO: correct number of keys
-  db_header.root_offset = sizeof(DBHeader);
+  db_header.root_offset = 10u;  // sizeof(DBHeader) returns wrong size (12 bytes) because of padding
 
   _write_value(db_header.version);
   _write_value(db_header.value_size);
@@ -104,14 +104,12 @@ BPNode DBFileManager::_init_root() {
   node_header.parent_id = InvalidNodeID;  // no parent
   node_header.next_leaf = InvalidNodeID;  // no neighbours
   node_header.previous_leaf = InvalidNodeID;
-  node_header.key_size = 4;
   node_header.num_keys = 0;
 
   // Empty root
   BPNode root{node_header, {}, {}};
 
   _write_node(root, _db_header.root_offset);
-  _db_file.flush();
 
   return root;
 }
@@ -125,37 +123,40 @@ BPNode DBFileManager::_load_node(FileOffset offset) {
   node_header.parent_id = _read_value<NodeID>();
   node_header.next_leaf = _read_value<NodeID>();
   node_header.previous_leaf = _read_value<NodeID>();
-  node_header.key_size = _read_value<uint16_t>();
   node_header.num_keys = _read_value<uint16_t>();
 
   auto keys = _read_values<FileKey>(_db_header.keys_per_node);
-  auto children = _read_values<FileOffset>(_db_header.keys_per_node + 1);
+  auto children = _read_values<NodeID>(_db_header.keys_per_node + 1);
 
   return BPNode(node_header, std::move(keys), std::move(children));
 }
 
 void DBFileManager::_write_node(const BPNode& node, FileOffset offset) {
+  const auto& node_header = node.header();
+  Assert(node_header.node_id == offset,
+         "Trying to write node " + std::to_string(node_header.node_id) + " to position " + std::to_string(offset));
+
   _db_file.seekp(offset);
 
-  const auto& node_header = node.header();
   _write_value(node_header.node_id);
   _write_value(node_header.is_leaf);
   _write_value(node_header.parent_id);
   _write_value(node_header.next_leaf);
   _write_value(node_header.previous_leaf);
-  _write_value(node_header.key_size);
   _write_value(node_header.num_keys);
 
   // Number of values to fill up empty space with
-  const auto dummy_values_size = _db_header.keys_per_node - node_header.num_keys;
+  const auto dummy_values_size = _db_header.keys_per_node - node.keys().size();
+  const auto dummy_children_size = (node.header().is_leaf) ? dummy_values_size + 1 : dummy_values_size;
   const std::vector<FileKey> dummy_keys(dummy_values_size);
-  const std::vector<NodeID> dummy_children(dummy_values_size);
+  const std::vector<NodeID> dummy_children(dummy_children_size);
 
   _write_values(node.keys());
   _write_values(dummy_keys);  // Fill rest of space with dummy keys
 
   _write_values(node.children());
   _write_values(dummy_children);  // Fill rest of space with dummy children
+
   _db_file.flush();
 }
 

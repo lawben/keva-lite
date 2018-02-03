@@ -81,7 +81,7 @@ inline bool DBFileManager::_read_value() {
 template <typename T>
 std::vector<T> DBFileManager::_read_values(uint32_t count) {
   std::vector<T> values(count);
-  _db_file.read(reinterpret_cast<char*>(values.data()), count);
+  _db_file.read(reinterpret_cast<char*>(values.data()), sizeof(T) * count);
   return values;
 }
 

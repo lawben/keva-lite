@@ -48,19 +48,19 @@ inline FileKey convert_to_file_key(const std::string& key) {
 }
 
 template <typename ValueType>
-inline ValueType _read_file_value(const FileValue& file_value) {
+inline ValueType read_file_value(const FileValue& file_value) {
   ValueType result;
   std::copy(file_value.begin(), file_value.end(), reinterpret_cast<char*>(&result));
   return result;
 }
 
 template <>
-inline std::string _read_file_value(const FileValue& file_value) {
+inline std::string read_file_value(const FileValue& file_value) {
   return std::string(file_value.begin(), file_value.end());
 }
 
 template <typename ValueType>
-inline FileValue _write_file_value(const ValueType& value) {
+inline FileValue write_file_value(const ValueType& value) {
   const auto num_bytes = sizeof(ValueType);
   FileValue file_value;
   file_value.reserve(num_bytes);
@@ -72,7 +72,7 @@ inline FileValue _write_file_value(const ValueType& value) {
 }
 
 template <>
-inline FileValue _write_file_value(const std::string& value) {
+inline FileValue write_file_value(const std::string& value) {
   const auto num_bytes = static_cast<uint32_t>(value.length());
   const auto num_bytes_raw = reinterpret_cast<const char*>(&num_bytes);
 

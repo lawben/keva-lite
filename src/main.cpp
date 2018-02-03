@@ -12,5 +12,5 @@ int main() {
   kv.put(2, "blub");
   std::cout << kv.get(2) << std::endl;
 
-  remove("blub.kv");
+//  remove("blub.kv");
 }

@@ -23,7 +23,6 @@ class KevaLite : public Noncopyable {
 };
 
 
-
 // Implementation
 
 template <typename K, typename V>
@@ -33,13 +32,13 @@ V KevaLite<K, V>::get(const K& key) {
   if (result.empty()) {
     throw std::runtime_error("Key '" + std::to_string(key) + "' not found.");
   }
-  return _read_file_value<V>(result);
+  return read_file_value<V>(result);
 }
 
 template <typename K, typename V>
 void KevaLite<K, V>::put(const K& key, const V& value) {
   auto file_key = convert_to_file_key(key);
-  _db_file_manager.put(file_key, _write_file_value(value));
+  _db_file_manager.put(file_key, write_file_value(value));
 }
 
 template <typename K, typename V>

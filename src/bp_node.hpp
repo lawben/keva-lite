@@ -12,7 +12,6 @@ struct BPNodeHeader {
   NodeID parent_id;
   NodeID next_leaf;
   NodeID previous_leaf;
-  uint16_t key_size;
   uint16_t num_keys;
 };
 
