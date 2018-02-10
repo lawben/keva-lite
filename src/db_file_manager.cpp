@@ -52,6 +52,11 @@ void DBFileManager::put(const FileKey key, const FileValue& value) {
 
   while (true) {
     if (node->header().is_leaf) {
+      auto insert_pos = node->find_child_insert_position(key);
+      if (node->keys().at(insert_pos) == key) {
+        throw std::runtime_error("Key: " + std::to_string(key) + " already exists.");
+      }
+
       // Leaf is full, split it
       if (node->header().num_keys == _max_keys_per_node) {
         new_node = std::make_unique<BPNode>(_split_leaf(node, key));
@@ -59,9 +64,11 @@ void DBFileManager::put(const FileKey key, const FileValue& value) {
         // Key belongs in new new node
         if (key >= new_node->keys().front()) {
           node = new_node.get();
+          // Do a new search on the new node
+          insert_pos = node->find_child_insert_position(key);
         }
       }
-      const auto insert_pos = node->find_insert_position(key);
+
       auto& keys = node->mutable_keys();
       auto& values = node->mutable_children();
 
@@ -104,7 +111,7 @@ void DBFileManager::put(const FileKey key, const FileValue& value) {
     }
 
     // Add new child to parent
-    const auto insert_pos = parent.find_insert_position(split_key);
+    const auto insert_pos = parent.find_child_insert_position(split_key);
     parent.mutable_keys().insert(parent.mutable_keys().begin() + insert_pos, split_key);
     parent.mutable_children().insert(parent.mutable_children().begin() + (insert_pos + 1), new_node->header().node_id);
   }

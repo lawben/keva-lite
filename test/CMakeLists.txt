@@ -13,4 +13,4 @@ include_directories(${GMOCK_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_executable(keva-test ${TEST_SOURCE_FILES})
-target_link_libraries(keva-test keva-lite gtest)
+target_link_libraries(keva-test keva-lite ${GTEST_LIBRARY})

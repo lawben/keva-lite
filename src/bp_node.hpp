@@ -28,13 +28,13 @@ class BPNode : public Noncopyable {
   std::vector<FileKey>& mutable_keys();
   std::vector<NodeID>& mutable_children();
 
-  // Finds the position of the next child to look at
+  // Finds the ID of the next child to look at. Only callable on internal nodes
   NodeID find_child(FileKey key) const;
+  uint16_t find_child_insert_position(FileKey key) const;
 
-  // Finds the position of the value for the key or 0 if not found
+  // Finds the the value for the key or InvalidNodeID if not found. Only callable on leafs
   NodeID find_value(FileKey key) const;
-
-  uint16_t find_insert_position(FileKey key) const;
+  uint16_t find_value_insert_position(FileKey key) const;
 
  protected:
   BPNodeHeader _header;

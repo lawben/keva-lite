@@ -25,6 +25,13 @@ inline void Assert(const T& value, const std::string& msg) {
   throw std::logic_error(msg);
 }
 
+#if IS_DEBUG
+#define DebugAssert(expr, msg) keva::Assert(expr, msg)
+#else
+#define DebugAssert(expr, msg)
+#endif
+
+
 template <typename T>
 std::enable_if_t<!std::is_same_v<T, std::string>, uint16_t>
 inline get_type_size() {
