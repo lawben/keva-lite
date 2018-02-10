@@ -32,10 +32,15 @@ class DBFileManager : public Noncopyable {
   DBHeader _load_db();
   BPNode _init_root();
 
+  BPNode _split_leaf(BPNode* node, FileKey split_key);
+  std::pair<BPNode, FileKey> _split_parent(BPNode* node, BPNode* new_child, FileKey split_key);
+
+  FileOffset _get_next_position();
   uint32_t _get_file_size();
 
   BPNode _load_node(FileOffset offset);
-  void _write_node(const BPNode& node, FileOffset offset);
+  void _write_new_node(const BPNode& node);
+  void _update_node(const BPNode& node);
 
   FileValue _get_value(NodeID value_pos);
   FileOffset _insert_value(const FileValue& value);
@@ -60,6 +65,7 @@ class DBFileManager : public Noncopyable {
 
   FileOffset _next_position = 0;
 
+  uint16_t _max_keys_per_node;
   uint16_t _value_size;
 };
 
