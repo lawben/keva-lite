@@ -31,16 +31,13 @@ inline void Assert(const T& value, const std::string& msg) {
 #define DebugAssert(expr, msg)
 #endif
 
-
 template <typename T>
-std::enable_if_t<!std::is_same_v<T, std::string>, uint16_t>
-inline get_type_size() {
+std::enable_if_t<!std::is_same_v<T, std::string>, uint16_t> inline get_type_size() {
   return static_cast<uint16_t>(sizeof(T));
 }
 
 template <typename T>
-std::enable_if_t<std::is_same_v<T, std::string>, uint16_t>
-inline get_type_size() {
+std::enable_if_t<std::is_same_v<T, std::string>, uint16_t> inline get_type_size() {
   return 0;
 }
 

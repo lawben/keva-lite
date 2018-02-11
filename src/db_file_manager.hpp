@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "bp_node.hpp"
-#include "utils.hpp"
 #include "types.hpp"
+#include "utils.hpp"
 
 namespace keva {
 
@@ -32,8 +32,8 @@ class DBFileManager : public Noncopyable {
   DBHeader _load_db();
   BPNode _init_root();
 
-  BPNode _split_leaf(BPNode* node, FileKey split_key);
-  std::pair<BPNode, FileKey> _split_parent(BPNode* node, BPNode* new_child, FileKey split_key);
+  //  BPNode _split_leaf(BPNode* node, FileKey split_key);
+  //  std::pair<BPNode, FileKey> _split_parent(BPNode* node, BPNode* new_child, FileKey split_key);
 
   FileOffset _get_next_position();
   uint32_t _get_file_size();

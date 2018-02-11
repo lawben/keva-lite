@@ -11,7 +11,7 @@ template <typename K, typename V>
 class KevaLite : public Noncopyable {
  public:
   explicit KevaLite(std::string db_file_name)
-    : _db_file_name(std::move(db_file_name)), _db_file_manager(_db_file_name, get_type_size<V>()) {}
+      : _db_file_name(std::move(db_file_name)), _db_file_manager(_db_file_name, get_type_size<V>()) {}
 
   V get(const K& key);
   void put(const K& key, const V& value);
@@ -21,7 +21,6 @@ class KevaLite : public Noncopyable {
   const std::string _db_file_name;
   DBFileManager _db_file_manager;
 };
-
 
 // Implementation
 
@@ -48,4 +47,3 @@ void KevaLite<K, V>::remove(const K& key) {
 }
 
 }  // namespace keva
-

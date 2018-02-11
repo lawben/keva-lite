@@ -18,7 +18,7 @@ struct BPNodeHeader {
 class BPNode : public Noncopyable {
  public:
   BPNode(BPNodeHeader header, std::vector<FileKey> keys, std::vector<NodeID> children)
-    : _header(header), _keys(std::move(keys)), _children(std::move(children)) {}
+      : _header(header), _keys(std::move(keys)), _children(std::move(children)) {}
 
   const BPNodeHeader& header() const;
   const std::vector<FileKey>& keys() const;
@@ -27,6 +27,11 @@ class BPNode : public Noncopyable {
   BPNodeHeader& mutable_header();
   std::vector<FileKey>& mutable_keys();
   std::vector<NodeID>& mutable_children();
+
+  void insert(FileKey key, const NodeID child);
+
+  BPNode split_leaf(FileKey split_key);
+  std::pair<BPNode, FileKey> split_parent(NodeID new_child_id, FileKey split_key);
 
   // Finds the ID of the next child to look at. Only callable on internal nodes
   NodeID find_child(FileKey key) const;

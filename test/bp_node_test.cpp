@@ -7,10 +7,6 @@ namespace keva {
 
 class BPNodeTest : public ::testing::Test {
  protected:
-  void SetUp() override {}
-
-  void TearDown() override {}
-
   const BPNodeHeader _header{12, false, InvalidNodeID, InvalidNodeID, InvalidNodeID, 4};
   const std::vector<FileKey> _keys = {1, 3, 5, 7};
   const std::vector<NodeID> _children = {12, 24, 36, 48, 60};
