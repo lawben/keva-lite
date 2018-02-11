@@ -3,7 +3,7 @@ set (
 
         keva_test_main.cpp
         bp_node_test.cpp
-        utils_test.cpp)
+        utils_test.cpp keva_lite_test.cpp)
 
 enable_testing()
 include(External_GTest.cmake)

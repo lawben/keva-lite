@@ -8,12 +8,13 @@ set (
 
         src/bp_node.cpp
         src/bp_node.hpp
-        src/db_file_manager.cpp
-        src/db_file_manager.hpp
-        src/keva_lite.cpp
+        src/db_manager.cpp
+        src/db_manager.hpp
         src/keva_lite.hpp
         src/types.hpp
         src/utils.hpp
+        src/file_manager.cpp
+        src/file_manager.hpp
 )
 
 add_compile_options(-std=c++17 -Wall -Wextra -pedantic) # -Werror)
