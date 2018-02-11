@@ -60,8 +60,20 @@ void DBFileManager::put(const FileKey key, const FileValue& value) {
       // Leaf is full, split it
       if (node->header().num_keys == _max_keys_per_node) {
         new_node = std::make_unique<BPNode>(node->split_leaf(key));
-        new_node->mutable_header().node_id = _get_next_position();
-        node->mutable_header().next_leaf = new_node->header().node_id;
+        auto& new_header = new_node->mutable_header();
+        auto& node_header = node->mutable_header();
+
+        new_header.node_id = _get_next_position();
+
+        new_header.next_leaf = node_header.next_leaf;
+        node_header.next_leaf = new_header.node_id;
+
+        // Update next leaf's previous pointer
+        if (new_header.next_leaf != InvalidNodeID) {
+          auto next_leaf = _load_node(new_header.next_leaf);
+          next_leaf.mutable_header().previous_leaf = new_header.node_id;
+          _update_node(next_leaf);
+        }
 
         // Key belongs in new new node
         if (key >= new_node->keys().front()) {
@@ -72,6 +84,7 @@ void DBFileManager::put(const FileKey key, const FileValue& value) {
         }
       }
 
+      // TODO: this will overwrite new_node's node id position in the file
       const auto value_pos = _insert_value(value);
       node->insert(key, value_pos);
 
@@ -103,15 +116,15 @@ void DBFileManager::put(const FileKey key, const FileValue& value) {
 
     // Parent is full and needs to be split
     if (parent.header().num_keys == _max_keys_per_node) {
-      auto split_result = parent->split_parent(new_node->header().node_id, split_key);
+      auto split_result = parent.split_parent(new_node->header().node_id, split_key);
       new_node = std::make_unique<BPNode>(std::move(split_result.first));
       split_key = split_result.second;
 
       new_node->mutable_header().node_id = _get_next_position();
       _write_new_node(*new_node);
-      _update_node(*parent);
+      _update_node(parent);
     } else {
-      parent->insert(split_key, new_node->header().node_id);
+      parent.insert(split_key, new_node->header().node_id);
       new_node = nullptr;
     }
   }

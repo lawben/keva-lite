@@ -10,22 +10,19 @@ const std::vector<NodeID>& BPNode::children() const { return _children; }
 
 BPNodeHeader& BPNode::mutable_header() { return _header; }
 
-std::vector<FileKey>& BPNode::mutable_keys() { return _keys; }
-
-std::vector<NodeID>& BPNode::mutable_children() { return _children; }
-
 BPNode BPNode::split_leaf(FileKey split_key) {
   DebugAssert(_header.is_leaf, "Cannot call split_leaf on non-leaf node");
 
   const auto num_keys = _keys.size();
   auto num_keys_move = num_keys / 2;
-  const auto num_keys_stay = num_keys - num_keys_move;
+  auto num_keys_stay = num_keys - num_keys_move;
 
   // Is new key smaller than largest value that stays in old node
   bool new_key_stays = split_key < _keys.at(num_keys_stay - 1);
   if (new_key_stays) {
     // New key belongs in old node
     num_keys_move++;
+    num_keys_stay--;
   }
 
   std::vector<FileKey> new_keys;
@@ -35,6 +32,10 @@ BPNode BPNode::split_leaf(FileKey split_key) {
   std::vector<FileOffset> new_children;
   new_children.reserve(num_keys);
   std::move(_children.end() - num_keys_move, _children.end(), std::back_inserter(new_children));
+
+  _header.num_keys = static_cast<uint16_t>(num_keys_stay);
+  _keys.resize(num_keys_stay);
+  _children.resize(num_keys_stay);
 
   BPNodeHeader new_node_header{};
   new_node_header.node_id = InvalidNodeID;  // use dummy value, external caller has to update this
@@ -57,7 +58,7 @@ std::pair<BPNode, FileKey> BPNode::split_parent(NodeID new_child_id, FileKey spl
   auto num_keys_move = num_child_move - 1;
   auto num_keys_stay = num_keys - num_child_move;
 
-  auto median_key = _keys.at(num_keys_stay - 1);
+  auto median_key = _keys.at(num_child_move - 1);
 
   // Is new key smaller than largest key that stays in old node
   const auto new_key_stays = split_key < median_key;
@@ -74,6 +75,7 @@ std::pair<BPNode, FileKey> BPNode::split_parent(NodeID new_child_id, FileKey spl
     num_keys_stay--;
   } else if (is_new_key_median) {
     median_key = split_key;
+    num_keys_move++;
   } else {
     median_key = _keys.at(num_keys_stay);
   }
@@ -105,7 +107,7 @@ std::pair<BPNode, FileKey> BPNode::split_parent(NodeID new_child_id, FileKey spl
   new_node_header.parent_id = _header.parent_id;
   new_node_header.next_leaf = InvalidNodeID;
   new_node_header.previous_leaf = InvalidNodeID;
-  new_node_header.num_keys = static_cast<uint16_t>(num_keys_move);
+  new_node_header.num_keys = static_cast<uint16_t>(new_keys.size());
 
   BPNode new_node{new_node_header, std::move(new_keys), std::move(new_children)};
   return {std::move(new_node), median_key};
@@ -119,7 +121,7 @@ void BPNode::insert(FileKey key, const NodeID child) {
   } else {
     const auto insert_pos = find_child_insert_position(key);
     _keys.insert(_keys.begin() + insert_pos, key);
-    _children.insert(_children.begin() + (insert_pos + 1), child);
+    _children.insert(_children.begin() + insert_pos, child);
   }
 
   _header.num_keys++;

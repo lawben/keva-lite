@@ -25,8 +25,6 @@ class BPNode : public Noncopyable {
   const std::vector<NodeID>& children() const;
 
   BPNodeHeader& mutable_header();
-  std::vector<FileKey>& mutable_keys();
-  std::vector<NodeID>& mutable_children();
 
   void insert(FileKey key, const NodeID child);
 
