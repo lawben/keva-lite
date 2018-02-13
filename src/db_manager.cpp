@@ -41,8 +41,8 @@ void DBManager::put(const FileKey key, const FileValue& value) {
 
   while (true) {
     if (node->header().is_leaf) {
-      const auto insert_pos = node->find_child_insert_position(key);
-      if (node->keys().at(insert_pos) == key) {
+      const auto insert_pos = node->find_value_insert_position(key);
+      if (insert_pos < node->keys().size() && node->keys().at(insert_pos) == key) {
         throw std::runtime_error("Key '" + std::to_string(key) + "' already exists.");
       }
 

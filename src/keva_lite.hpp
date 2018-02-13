@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sstream>
 #include <string>
 
 #include "db_manager.hpp"
@@ -19,7 +20,6 @@ class KevaLite : public Noncopyable {
   void remove(const K& key);
 
  protected:
-  const std::string _db_file_name;
   DBManager _db_manager;
 };
 
@@ -27,15 +27,16 @@ template <typename K, typename V>
 KevaLite<K, V>::KevaLite() : _db_manager(get_type_size<V>()) {}
 
 template <typename K, typename V>
-KevaLite<K, V>::KevaLite(std::string db_file_name)
-    : _db_file_name(std::move(db_file_name)), _db_manager(_db_file_name, get_type_size<V>()) {}
+KevaLite<K, V>::KevaLite(std::string db_file_name) : _db_manager(std::move(db_file_name), get_type_size<V>()) {}
 
 template <typename K, typename V>
 V KevaLite<K, V>::get(const K& key) {
   const auto file_key = convert_to_file_key(key);
   auto result = _db_manager.get(file_key);
   if (result.empty()) {
-    throw std::runtime_error("Key '" + std::to_string(key) + "' not found.");
+    std::stringstream msg;
+    msg << "Key '" << key << "' not found.";
+    throw std::runtime_error(msg.str());
   }
   return read_file_value<V>(result);
 }

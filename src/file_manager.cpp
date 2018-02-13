@@ -1,6 +1,7 @@
 #include "file_manager.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 namespace keva {
@@ -34,8 +35,8 @@ DBHeader FileManager::init_db() {
   DBHeader db_header{};
   db_header.version = 1;
   db_header.value_size = _value_size;
-  db_header.keys_per_node = 10;  // TODO: correct number of keys
-  db_header.root_offset = 10u;   // sizeof(DBHeader) returns wrong size (12 bytes) because of padding
+  db_header.keys_per_node = KEYS_PER_NODE;
+  db_header.root_offset = DB_HEADER_SIZE;
 
   write_value(db_header.version);
   write_value(db_header.value_size);
@@ -88,12 +89,14 @@ void FileManager::update_node(const BPNode& node) {
   const auto& node_header = node.header();
   _db->seekp(node_header.node_id);
 
-  write_value(node_header.node_id);
-  write_value(node_header.is_leaf);
-  write_value(node_header.parent_id);
-  write_value(node_header.next_leaf);
-  write_value(node_header.previous_leaf);
-  write_value(node_header.num_keys);
+  auto bytes_written = 0u;
+
+  bytes_written += write_value(node_header.node_id);
+  bytes_written += write_value(node_header.is_leaf);
+  bytes_written += write_value(node_header.parent_id);
+  bytes_written += write_value(node_header.next_leaf);
+  bytes_written += write_value(node_header.previous_leaf);
+  bytes_written += write_value(node_header.num_keys);
 
   // Number of values to fill up empty space with
   const auto dummy_values_size = _max_keys_per_node - node.keys().size();
@@ -101,12 +104,15 @@ void FileManager::update_node(const BPNode& node) {
   const std::vector<FileKey> dummy_keys(dummy_values_size);
   const std::vector<NodeID> dummy_children(dummy_children_size);
 
-  write_values(node.keys());
-  write_values(dummy_keys);  // Fill rest of space with dummy keys
+  bytes_written += write_values(node.keys());
+  bytes_written += write_values(dummy_keys);  // Fill rest of space with dummy keys
 
-  write_values(node.children());
-  write_values(dummy_children);  // Fill rest of space with dummy children
+  bytes_written += write_values(node.children());
+  bytes_written += write_values(dummy_children);  // Fill rest of space with dummy children
 
+  auto num_padding_bytes = BP_NODE_SIZE - bytes_written;
+  const std::vector<char> padding_vector(num_padding_bytes);
+  write_values(padding_vector);
   _db->flush();
 }
 
@@ -138,11 +144,11 @@ FileOffset FileManager::insert_value(const FileValue& value) {
 
 FileOffset FileManager::get_next_position() { return _next_position; }
 
-uint32_t FileManager::_get_file_size() {
+FileOffset FileManager::_get_file_size() {
   _db->seekg(0, std::ios_base::beg);
   std::ifstream::pos_type begin_pos = _db->tellg();
   _db->seekg(0, std::ios_base::end);
-  return static_cast<uint32_t>(_db->tellg() - begin_pos);
+  return _db->tellg() - begin_pos;
 }
 
 }  // namespace keva

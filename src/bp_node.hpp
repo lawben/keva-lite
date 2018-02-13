@@ -26,7 +26,7 @@ class BPNode : public Noncopyable {
 
   BPNodeHeader& mutable_header();
 
-  void insert(FileKey key, const NodeID child);
+  void insert(FileKey key, NodeID child);
 
   BPNode split_leaf(FileKey split_key);
   std::pair<BPNode, FileKey> split_parent(NodeID new_child_id, FileKey split_key);
