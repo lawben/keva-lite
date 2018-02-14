@@ -12,14 +12,17 @@ namespace keva {
 
 class DBManager : public Noncopyable {
  public:
-  explicit DBManager(uint16_t value_size);
-  DBManager(std::string db_file_name, uint16_t value_size);
+  explicit DBManager(uint16_t value_size, uint16_t max_keys_per_node = KEYS_PER_NODE);
+  DBManager(std::string db_file_name, uint16_t value_size, uint16_t max_keys_per_node = KEYS_PER_NODE);
 
-  FileValue get(FileKey key);
+  FileValue get(FileKey key) const;
 
   void put(FileKey key, const FileValue& value);
 
   void remove(FileKey key);
+
+  const FileManager& get_file_manager();
+  const BPNode& get_root();
 
  protected:
   BPNode _init_root();

@@ -38,12 +38,12 @@ V KevaLite<K, V>::get(const K& key) {
     msg << "Key '" << key << "' not found.";
     throw std::runtime_error(msg.str());
   }
-  return read_file_value<V>(result);
+  return convert_from_file_value<V>(result);
 }
 template <typename K, typename V>
 void KevaLite<K, V>::put(const K& key, const V& value) {
   const auto file_key = convert_to_file_key(key);
-  _db_manager.put(file_key, write_file_value(value));
+  _db_manager.put(file_key, convert_to_file_value(value));
 }
 template <typename K, typename V>
 void KevaLite<K, V>::remove(const K& key) {

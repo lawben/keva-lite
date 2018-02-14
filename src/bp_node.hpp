@@ -18,7 +18,9 @@ struct BPNodeHeader {
 class BPNode : public Noncopyable {
  public:
   BPNode(BPNodeHeader header, std::vector<FileKey> keys, std::vector<NodeID> children)
-      : _header(header), _keys(std::move(keys)), _children(std::move(children)) {}
+      : _header(header), _keys(std::move(keys)), _children(std::move(children)) {
+    DebugAssert(_header.num_keys == _keys.size(), "Passed in different number of keys than in header");
+  }
 
   const BPNodeHeader& header() const;
   const std::vector<FileKey>& keys() const;

@@ -12,6 +12,8 @@ using FileValue = std::vector<char>;
 // sizeof(DBHeader) returns wrong size (12 bytes) because of padding
 static const uint16_t DB_HEADER_SIZE = 14;
 
+static const uint16_t BP_NODE_HEADER_SIZE = 35;
+
 static const uint16_t BP_NODE_SIZE = 2048;
 
 // 35 byte header + 125 * 8 (keys) + 126 * 8 (child pointer) = 2043

@@ -6,16 +6,15 @@
 
 namespace keva {
 
-FileManager::FileManager(uint16_t value_size) : _value_size(value_size) {
+FileManager::FileManager(uint16_t value_size, uint16_t max_keys_per_node)
+    : _value_size(value_size), _max_keys_per_node(max_keys_per_node) {
   _db = std::make_unique<std::stringstream>(_file_flags);
   _db_header = init_db();
-
-  _max_keys_per_node = _db_header.keys_per_node;
   _next_position = _get_file_size();
 }
 
-FileManager::FileManager(std::string db_file_name, uint16_t value_size)
-    : _db_file_name(std::move(db_file_name)), _value_size(value_size) {
+FileManager::FileManager(std::string db_file_name, uint16_t value_size, uint16_t max_keys_per_node)
+    : _db_file_name(std::move(db_file_name)), _value_size(value_size), _max_keys_per_node(max_keys_per_node) {
   std::ifstream exist_check(_db_file_name);
   const auto is_new_db = !exist_check.good();
 
@@ -27,28 +26,30 @@ FileManager::FileManager(std::string db_file_name, uint16_t value_size)
     _db_header = load_db();
   }
 
-  _max_keys_per_node = _db_header.keys_per_node;
   _next_position = _get_file_size();
 }
 
 DBHeader FileManager::init_db() {
+  _db->seekp(0);
+  DebugAssert(!_db->fail(), "Failed to set position in output stream.");
+
   DBHeader db_header{};
   db_header.version = 1;
   db_header.value_size = _value_size;
-  db_header.keys_per_node = KEYS_PER_NODE;
+  db_header.keys_per_node = _max_keys_per_node;
   db_header.root_offset = DB_HEADER_SIZE;
 
   write_value(db_header.version);
   write_value(db_header.value_size);
   write_value(db_header.keys_per_node);
   write_value(db_header.root_offset);
-  _db->flush();
 
   return db_header;
 }
 
-DBHeader FileManager::load_db() {
+DBHeader FileManager::load_db() const {
   _db->seekg(0);
+  DebugAssert(!_db->fail(), "Failed to set position in input stream.");
 
   DBHeader db_header{};
   db_header.version = read_value<uint16_t>();
@@ -57,12 +58,22 @@ DBHeader FileManager::load_db() {
   db_header.root_offset = read_value<FileOffset>();
 
   Assert(db_header.value_size == _value_size, "Database file contains different value type than specified.");
+  Assert(db_header.keys_per_node == _max_keys_per_node,
+         "Database file contains different number of keys per node than specified.");
 
   return db_header;
 }
 
-BPNode FileManager::load_node(FileOffset offset) {
+void FileManager::update_root_offset(FileOffset offset) {
+  _db->seekp(6);
+  DebugAssert(!_db->fail(), "Failed to set position in output stream.");
+  write_value(offset);
+}
+
+BPNodeHeader FileManager::load_node_header(FileOffset offset) const {
+  DebugAssert(offset != InvalidNodeID, "Trying to read from invalid offset");
   _db->seekg(offset);
+  DebugAssert(!_db->fail(), "Failed to set position in input stream.");
 
   BPNodeHeader node_header{};
   node_header.node_id = read_value<NodeID>();
@@ -72,31 +83,38 @@ BPNode FileManager::load_node(FileOffset offset) {
   node_header.previous_leaf = read_value<NodeID>();
   node_header.num_keys = read_value<uint16_t>();
 
+  return node_header;
+}
+
+BPNode FileManager::load_node(FileOffset offset) const {
+  DebugAssert(offset != InvalidNodeID, "Trying to read from invalid offset");
+  const auto node_header = load_node_header(offset);
+
+  const auto num_children = _max_keys_per_node + (node_header.is_leaf ? 0 : 1u);
+
   auto keys = read_values<FileKey>(_max_keys_per_node);
-  auto children = read_values<NodeID>(_max_keys_per_node + 1);
+  auto children = read_values<NodeID>(num_children);
 
   return BPNode(node_header, std::move(keys), std::move(children));
 }
 
-const DBHeader& FileManager::get_db_header() { return _db_header; }
+void FileManager::write_node_header(const BPNodeHeader& header) {
+  DebugAssert(header.node_id != InvalidNodeID, "Trying to write to invalid offset");
 
-void FileManager::write_new_node(const BPNode& node) {
-  update_node(node);
-  _next_position += BP_NODE_SIZE;
+  _db->seekp(header.node_id);
+  DebugAssert(!_db->fail(), "Failed to set position in output stream.");
+  write_value(header.node_id);
+  write_value(header.is_leaf);
+  write_value(header.parent_id);
+  write_value(header.next_leaf);
+  write_value(header.previous_leaf);
+  write_value(header.num_keys);
 }
 
-void FileManager::update_node(const BPNode& node) {
-  const auto& node_header = node.header();
-  _db->seekp(node_header.node_id);
+void FileManager::write_node(const BPNode& node) {
+  write_node_header(node.header());
 
-  auto bytes_written = 0u;
-
-  bytes_written += write_value(node_header.node_id);
-  bytes_written += write_value(node_header.is_leaf);
-  bytes_written += write_value(node_header.parent_id);
-  bytes_written += write_value(node_header.next_leaf);
-  bytes_written += write_value(node_header.previous_leaf);
-  bytes_written += write_value(node_header.num_keys);
+  auto bytes_written = BP_NODE_HEADER_SIZE;
 
   // Number of values to fill up empty space with
   const auto dummy_values_size = _max_keys_per_node - node.keys().size();
@@ -110,17 +128,18 @@ void FileManager::update_node(const BPNode& node) {
   bytes_written += write_values(node.children());
   bytes_written += write_values(dummy_children);  // Fill rest of space with dummy children
 
-  auto num_padding_bytes = BP_NODE_SIZE - bytes_written;
+  const auto num_padding_bytes = BP_NODE_SIZE - bytes_written;
   const std::vector<char> padding_vector(num_padding_bytes);
   write_values(padding_vector);
   _db->flush();
 }
 
-FileValue FileManager::get_value(NodeID value_pos) {
+FileValue FileManager::get_value(FileOffset value_pos) const {
   // No value to be read
   if (value_pos == InvalidNodeID) return FileValue();
 
   _db->seekg(value_pos);
+  DebugAssert(!_db->fail(), "Failed to set position in input stream.");
   auto value_size = _db_header.value_size;
 
   // Variable size (e.g. string or raw data type). Read size of upcoming data block
@@ -132,23 +151,30 @@ FileValue FileManager::get_value(NodeID value_pos) {
 }
 
 FileOffset FileManager::insert_value(const FileValue& value) {
-  const auto insert_pos = get_next_position();
+  DebugAssert(!value.empty(), "Trying to insert an empty value");
+  const auto insert_pos = get_next_value_position(value);
+
   _db->seekp(insert_pos);
+  DebugAssert(!_db->fail(), "Failed to set position in output stream");
 
   write_values(value);
-  _db->flush();
-
-  _next_position += value.size();
   return insert_pos;
 }
 
-FileOffset FileManager::get_next_position() { return _next_position; }
+FileOffset FileManager::get_next_node_position() { return _get_next_position(BP_NODE_SIZE); }
 
+FileOffset FileManager::get_next_value_position(const FileValue& value) { return _get_next_position(value.size()); }
+
+FileOffset FileManager::_get_next_position(FileOffset move_forward) {
+  const auto next_position = _next_position;
+  _next_position += move_forward;
+  return next_position;
+}
 FileOffset FileManager::_get_file_size() {
   _db->seekg(0, std::ios_base::beg);
   std::ifstream::pos_type begin_pos = _db->tellg();
   _db->seekg(0, std::ios_base::end);
-  return _db->tellg() - begin_pos;
+  return static_cast<FileOffset>(_db->tellg() - begin_pos);
 }
 
 }  // namespace keva

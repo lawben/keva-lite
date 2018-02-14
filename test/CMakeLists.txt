@@ -6,7 +6,7 @@ set (
         utils_test.cpp
         keva_lite_test.cpp
         test_utils.hpp
-)
+        db_manager_test.cpp test_utils.cpp file_manager_test.cpp)
 
 enable_testing()
 include(External_GTest.cmake)
