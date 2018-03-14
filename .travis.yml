@@ -11,15 +11,14 @@ compiler:
 
 env:
   matrix:
-    - CMAKE_CONFIGURATION=release BUILD_DIR=build_release
-    - CMAKE_CONFIGURATION=debug BUILD_DIR=build_debug
+    - DCMAKE_BUILD_TYPE=Debug BUILD_DIR=build_debug
+    - DCMAKE_BUILD_TYPE=Release BUILD_DIR=build_release
 
 script:
   - mkdir -p build
   - cd build
   - cmake .. && make
-  - cmake --build . --target keva-test
-  - cmake --build . --target keva-lite-example
+  - test/keva-test
 
 notifications:
   email: false
