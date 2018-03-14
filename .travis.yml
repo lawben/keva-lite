@@ -15,7 +15,7 @@ env:
 script:
   - mkdir -p build
   - cd build
-  - cmake .. && make
+  - cmake .. && make -j
   - test/keva-test
 
 notifications:
