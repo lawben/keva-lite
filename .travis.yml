@@ -1,0 +1,10 @@
+language: cpp
+
+compiler:
+  - clang
+  - gcc
+
+script: cmake
+
+notifications:
+  email: false
