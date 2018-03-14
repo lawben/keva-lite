@@ -19,11 +19,11 @@ int main() {
   //
   //  std::cout << count;
 
-  FileManager fm{8};
+  FileManager fm{4, KEYS_PER_NODE};
 
   auto started = std::chrono::high_resolution_clock::now();
 
-  //  const auto start_offset = fm.get_next_node_position();
+  const auto start_offset = 14;
   std::cout << "Starting at position: " << start_offset << std::endl;
 
   auto iterations = 10000u;

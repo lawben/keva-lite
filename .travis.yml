@@ -4,7 +4,12 @@ compiler:
   - clang
   - gcc
 
-script: cmake
+script:
+  - mkdir -p build
+  - cd build
+  - cmake ..
+  - make
+  - ./keva-test
 
 notifications:
   email: false
