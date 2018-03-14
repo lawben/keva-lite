@@ -3,6 +3,25 @@ language: cpp
 os: linux
 dist: trusty
 
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-7" CC="gcc-7"; fi
+  - echo ${PATH}
+  - ${CXX} --version
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-5.0
+      - george-edison55-trusty-backports
+    packages:
+      - cmake
+      - cmake-data
+      - gcc-7
+      - g++-7
+      - clang-3.9
+      - cppcheck
+
 compiler:
   - clang
   - gcc
