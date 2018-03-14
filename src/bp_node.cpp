@@ -10,7 +10,7 @@ const std::vector<NodeID>& BPNode::children() const { return _children; }
 
 BPNodeHeader& BPNode::mutable_header() { return _header; }
 
-BPNode BPNode::split_leaf(FileKey split_key) {
+BPNode BPNode::split_leaf(const FileKey split_key) {
   DebugAssert(_header.is_leaf, "Cannot call split_leaf on non-leaf node");
 
   const auto num_keys = _keys.size();
@@ -48,7 +48,7 @@ BPNode BPNode::split_leaf(FileKey split_key) {
   return BPNode(new_node_header, std::move(new_keys), std::move(new_children));
 }
 
-std::pair<BPNode, FileKey> BPNode::split_parent(NodeID new_child_id, FileKey split_key) {
+std::pair<BPNode, FileKey> BPNode::split_parent(FileKey split_key, NodeID new_child_id) {
   DebugAssert(!_header.is_leaf, "Cannot call split_parent on leaf node");
 
   const auto num_keys = _keys.size();
@@ -58,27 +58,28 @@ std::pair<BPNode, FileKey> BPNode::split_parent(NodeID new_child_id, FileKey spl
   auto num_keys_move = num_child_move - 1;
   auto num_keys_stay = num_keys - num_child_move;
 
-  auto median_key = _keys.at(num_child_move - 1);
+  auto median_key = _keys.at(num_keys_stay);
 
   // Is new key smaller than largest key that stays in old node
-  const auto new_key_stays = split_key < median_key;
-  const auto is_new_key_median = !new_key_stays && split_key < _keys.at(num_keys_stay);
-
-  std::vector<FileKey> new_keys;
-  new_keys.reserve(num_keys);
-  std::vector<NodeID> new_children;
-  new_children.reserve(num_keys + 1);
+  const auto new_key_stays = split_key < _keys.at(num_keys_stay - 1);
+  const auto is_new_key_median = !new_key_stays && split_key < median_key;
 
   if (new_key_stays) {
     num_child_move++;
     num_keys_move++;
     num_keys_stay--;
+    median_key = _keys.at(num_keys_stay);
   } else if (is_new_key_median) {
     median_key = split_key;
     num_keys_move++;
   } else {
     median_key = _keys.at(num_keys_stay);
   }
+
+  std::vector<FileKey> new_keys;
+  new_keys.reserve(num_keys);
+  std::vector<NodeID> new_children;
+  new_children.reserve(num_keys + 1);
 
   std::move(_keys.end() - num_keys_move, _keys.end(), std::back_inserter(new_keys));
   _keys.resize(num_keys_stay);
@@ -113,26 +114,28 @@ std::pair<BPNode, FileKey> BPNode::split_parent(NodeID new_child_id, FileKey spl
   return {std::move(new_node), median_key};
 }
 
-void BPNode::insert(FileKey key, const NodeID child) {
+void BPNode::insert(const FileKey key, const NodeID child) {
+  uint16_t insert_pos;
+
   if (_header.is_leaf) {
-    const auto insert_pos = find_value_insert_position(key);
-    _keys.insert(_keys.begin() + insert_pos, key);
+    insert_pos = find_value_insert_position(key);
     _children.insert(_children.begin() + insert_pos, child);
   } else {
-    const auto insert_pos = find_child_insert_position(key);
-    _keys.insert(_keys.begin() + insert_pos, key);
-    _children.insert(_children.begin() + insert_pos, child);
+    insert_pos = find_child_insert_position(key);
+    _children.insert(_children.begin() + insert_pos + 1, child);
   }
+
+  _keys.insert(_keys.begin() + insert_pos, key);
 
   _header.num_keys++;
 }
 
-NodeID BPNode::find_child(FileKey key) const {
+NodeID BPNode::find_child(const FileKey key) const {
   DebugAssert(!_header.is_leaf, "Cannot call find_child on leaf node");
   return _children.at(find_child_insert_position(key));
 }
 
-NodeID BPNode::find_value(FileKey key) const {
+NodeID BPNode::find_value(const FileKey key) const {
   DebugAssert(_header.is_leaf, "Cannot call find_value on non-leaf node");
   const auto value_pos = find_value_insert_position(key);
   if (value_pos < _header.num_keys && key == _keys.at(value_pos)) {
@@ -142,30 +145,20 @@ NodeID BPNode::find_value(FileKey key) const {
   }
 }
 
-uint16_t BPNode::find_child_insert_position(FileKey key) const {
+uint16_t BPNode::find_child_insert_position(const FileKey key) const {
   DebugAssert(!_header.is_leaf, "Cannot call find_child_insert_position on leaf node");
   const auto key_end = _keys.cbegin() + _header.num_keys;
   const auto key_iter = std::upper_bound(_keys.begin(), key_end, key);
 
-  if (key_iter != key_end) {
-    return static_cast<uint16_t>(std::distance(_keys.begin(), key_iter));
-  }
-
-  // Key is larger than all keys
-  return _header.num_keys;
+  return static_cast<uint16_t>(std::distance(_keys.cbegin(), key_iter));
 }
 
-uint16_t BPNode::find_value_insert_position(FileKey key) const {
+uint16_t BPNode::find_value_insert_position(const FileKey key) const {
   DebugAssert(_header.is_leaf, "Cannot call find_value_insert_position on non-leaf node");
   const auto key_end = _keys.cbegin() + _header.num_keys;
   const auto key_iter = std::lower_bound(_keys.begin(), key_end, key);
 
-  if (key_iter != key_end) {
-    return static_cast<uint16_t>(std::distance(_keys.begin(), key_iter));
-  }
-
-  // Key is larger than all keys
-  return _header.num_keys;
+  return static_cast<uint16_t>(std::distance(_keys.begin(), key_iter));
 }
 
 }  // namespace keva

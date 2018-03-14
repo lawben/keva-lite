@@ -31,7 +31,7 @@ class BPNode : public Noncopyable {
   void insert(FileKey key, NodeID child);
 
   BPNode split_leaf(FileKey split_key);
-  std::pair<BPNode, FileKey> split_parent(NodeID new_child_id, FileKey split_key);
+  std::pair<BPNode, FileKey> split_parent(FileKey split_key, NodeID new_child_id);
 
   // Finds the ID of the next child to look at. Only callable on internal nodes
   NodeID find_child(FileKey key) const;

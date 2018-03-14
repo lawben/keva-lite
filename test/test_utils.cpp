@@ -1,7 +1,8 @@
 #include "test_utils.hpp"
 
-#include <string>
+#include <iomanip>
 #include <iostream>
+#include <string>
 
 #include "types.hpp"
 
@@ -122,6 +123,68 @@ bool trees_equal(const BPNode& root, const TestBPNode& test_root, const FileMana
     }
   }
   return true;
+}
+
+std::string truncate_string(const std::string& str, uint32_t width) {
+  return (str.length() > width) ? str.substr(0, width - 3) + "..." : str;
+}
+
+std::string truncate_string(const FileKey key, uint32_t width) {
+  return truncate_string(std::to_string(key), width);
+}
+
+void print_tree(const BPNode& node, const FileManager& file_manager) {
+  using namespace std;
+
+  if (node.header().is_leaf) {
+    cout << "LEAF @ " << node.header().node_id << endl;
+    cout << string(20, '=') << endl;
+    const auto max_len = 20ul;
+
+    const auto max_key = *std::max_element(node.keys().begin(), node.keys().end());
+    const auto max_value = *std::max_element(node.children().begin(), node.children().end());
+    const auto max_length = std::to_string(std::max(max_key, max_value)).length();
+    const auto length = std::min(max_length, max_len);
+
+    cout << "keys |";
+    for (const auto& k : node.keys()) cout << setw(length) << truncate_string(k, max_len) << "|";
+    cout << endl;
+    cout << "vals |";
+    for (const auto& v : node.children()) cout << setw(length) << truncate_string(v, max_len) << "|";
+    cout << endl;
+
+    cout << "prev: ";
+    if (node.header().previous_leaf != InvalidNodeID) { cout << node.header().previous_leaf; }
+    else { cout << "none"; }
+    cout << endl;
+
+    cout << "next: ";
+    if (node.header().next_leaf) { cout << node.header().next_leaf; }
+    else { cout << "none"; }
+
+    cout << "\n\n" << endl;
+  } else {
+    cout << "INTERNAL @ " << node.header().node_id << endl;
+    cout << string(20, '=') << endl;
+
+    const auto max_child = std::to_string(*std::max_element(node.children().begin(), node.children().end())).length();
+
+    const auto max_width = max_child + 2;  // + 2 for padding left and right
+    cout << setw(max_width / 2 + 1) << setfill(' ');
+    for (const auto& k : node.keys()) {
+      const auto print_key = truncate_string(k, max_width);
+      const auto padding = (max_width - print_key.length()) / 2;
+      cout << "|" << setw(max_width - padding) << setfill(' ') << print_key;
+      if (padding > 0) cout << setw(padding) << setfill(' ') << " ";
+    }
+    cout << "|" << endl;
+
+    cout << "| ";
+    for (const auto& child : node.children()) cout << setw(max_child) << child << " | ";
+    cout << "\n\n" << endl;
+
+    for (const auto& child : node.children()) print_tree(file_manager.load_node(child), file_manager);
+  }
 }
 
 };  // namespace keva

@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 
 #include "types.hpp"
 
@@ -17,16 +18,13 @@ class Noncopyable {
   const Noncopyable& operator=(const Noncopyable&) = delete;
 };
 
-template <typename T>
-inline void Assert(const T& value, const std::string& msg) {
-  if (static_cast<bool>(value)) {
-    return;
+#define Assert(expr, msg)         \
+  if (!static_cast<bool>(expr)) { \
+    throw std::logic_error(msg);  \
   }
-  throw std::logic_error(msg);
-}
 
 #if IS_DEBUG
-#define DebugAssert(expr, msg) keva::Assert(expr, msg)
+#define DebugAssert(expr, msg) Assert(expr, msg)
 #else
 #define DebugAssert(expr, msg)
 #endif

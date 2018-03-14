@@ -135,4 +135,115 @@ TEST_F(DBManagerTest, LeafSplitBack) {
   EXPECT_EQ(left_leaf.header().node_id, right_leaf.header().previous_leaf);
 }
 
+TEST_F(DBManagerTest, InternalNodeSplitFront) {
+  DBManager db_manager{4, 3};
+  const FileValue value = {0, 0, 0, 12};
+
+  db_manager.put(10, value);
+  db_manager.put(9, value);
+  db_manager.put(8, value);
+  db_manager.put(7, value);
+  db_manager.put(6, value);
+  db_manager.put(5, value);
+  db_manager.put(4, value);
+  db_manager.put(3, value);
+  db_manager.put(2, value);
+
+  // Splitting key
+  db_manager.put(1, value);
+
+  const auto& root = db_manager.get_root();
+  const auto& file_manager = db_manager.get_file_manager();
+
+  const auto expected_leaf_1 = TestBPNode::new_leaf({1, 2});
+  const auto expected_leaf_2 = TestBPNode::new_leaf({3, 4});
+  const auto expected_leaf_3 = TestBPNode::new_leaf({5, 6});
+  const auto expected_leaf_4 = TestBPNode::new_leaf({7, 8});
+  const auto expected_leaf_5 = TestBPNode::new_leaf({9, 10});
+  const auto expected_internal_1 = TestBPNode::new_node({3}, {expected_leaf_1, expected_leaf_2});
+  const auto expected_internal_2 = TestBPNode::new_node({7, 9}, {expected_leaf_3, expected_leaf_4, expected_leaf_5});
+  const auto expected_root = TestBPNode::new_node({5}, {expected_internal_1, expected_internal_2});
+
+  EXPECT_TRUE(trees_equal(root, expected_root, file_manager));
+
+  ASSERT_EQ(root.children().size(), 2u);
+  const auto left_internal = file_manager.load_node(root.children()[0]);
+  const auto right_internal = file_manager.load_node(root.children()[1]);
+  EXPECT_EQ(left_internal.header().parent_id, root.header().node_id);
+}
+
+TEST_F(DBManagerTest, InternalNodeSplitMiddle) {
+  DBManager db_manager{4, 3};
+  const FileValue value = {0, 0, 0, 12};
+
+  db_manager.put(10, value);
+  db_manager.put(9, value);
+  db_manager.put(8, value);
+  db_manager.put(7, value);
+  db_manager.put(6, value);
+  db_manager.put(1, value);
+  db_manager.put(2, value);
+  db_manager.put(3, value);
+  db_manager.put(4, value);
+
+  // Splitting key
+  db_manager.put(5, value);
+
+  const auto& root = db_manager.get_root();
+  const auto& file_manager = db_manager.get_file_manager();
+
+  const auto expected_leaf_1 = TestBPNode::new_leaf({1, 2});
+  const auto expected_leaf_2 = TestBPNode::new_leaf({3, 4});
+  const auto expected_leaf_3 = TestBPNode::new_leaf({5, 6});
+  const auto expected_leaf_4 = TestBPNode::new_leaf({7, 8});
+  const auto expected_leaf_5 = TestBPNode::new_leaf({9, 10});
+  const auto expected_internal_1 = TestBPNode::new_node({3}, {expected_leaf_1, expected_leaf_2});
+  const auto expected_internal_2 = TestBPNode::new_node({7, 9}, {expected_leaf_3, expected_leaf_4, expected_leaf_5});
+  const auto expected_root = TestBPNode::new_node({5}, {expected_internal_1, expected_internal_2});
+
+  EXPECT_TRUE(trees_equal(root, expected_root, file_manager));
+
+  ASSERT_EQ(root.children().size(), 2u);
+  const auto left_internal = file_manager.load_node(root.children()[0]);
+  const auto right_internal = file_manager.load_node(root.children()[1]);
+  EXPECT_EQ(left_internal.header().parent_id, root.header().node_id);
+}
+
+TEST_F(DBManagerTest, InternalNodeSplitBack) {
+  DBManager db_manager{4, 3};
+  const FileValue value = {0, 0, 0, 12};
+
+  db_manager.put(1, value);
+  db_manager.put(2, value);
+  db_manager.put(3, value);
+  db_manager.put(4, value);
+  db_manager.put(5, value);
+  db_manager.put(6, value);
+  db_manager.put(7, value);
+  db_manager.put(8, value);
+  db_manager.put(9, value);
+
+  // Splitting key
+  db_manager.put(10, value);
+
+  const auto& root = db_manager.get_root();
+  const auto& file_manager = db_manager.get_file_manager();
+
+  const auto expected_leaf_1 = TestBPNode::new_leaf({1, 2});
+  const auto expected_leaf_2 = TestBPNode::new_leaf({3, 4});
+  const auto expected_leaf_3 = TestBPNode::new_leaf({5, 6});
+  const auto expected_leaf_4 = TestBPNode::new_leaf({7, 8});
+  const auto expected_leaf_5 = TestBPNode::new_leaf({9, 10});
+  const auto expected_internal_1 = TestBPNode::new_node({3}, {expected_leaf_1, expected_leaf_2});
+  const auto expected_internal_2 = TestBPNode::new_node({7, 9}, {expected_leaf_3, expected_leaf_4, expected_leaf_5});
+  const auto expected_root = TestBPNode::new_node({5}, {expected_internal_1, expected_internal_2});
+
+  EXPECT_TRUE(trees_equal(root, expected_root, file_manager));
+
+  ASSERT_EQ(root.children().size(), 2u);
+  const auto left_internal = file_manager.load_node(root.children()[0]);
+  const auto right_internal = file_manager.load_node(root.children()[1]);
+  EXPECT_EQ(left_internal.header().parent_id, root.header().node_id);
+}
+
 }  // namespace keva

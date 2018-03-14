@@ -35,7 +35,7 @@ void DBManager::put(const FileKey key, const FileValue& value) {
 
   auto* node = _root.get();
 
-  // Potential newly created nodes
+  // Potential newly created node
   std::unique_ptr<BPNode> new_node;
 
   while (true) {
@@ -76,7 +76,7 @@ void DBManager::put(const FileKey key, const FileValue& value) {
       const auto value_pos = _file_manager.insert_value(value);
       node->insert(key, value_pos);
 
-      // Write the node tha we didn't write earlier
+      // Write the node that we didn't write earlier
       _file_manager.write_node(*node);
 
       break;
@@ -89,31 +89,37 @@ void DBManager::put(const FileKey key, const FileValue& value) {
 
   if (!new_node) return;
 
-  // Last child is a leaf with no children so we ignore it
-  // If there are no children skip this entire while loop
-  auto parent_it = children.empty() ? children.rend() : children.rbegin() + 1;
+  auto parent_it = children.rbegin();
   auto split_key = new_node->keys().front();
 
   // New nodes through splitting need to be added to parents
   while (new_node && parent_it != children.rend()) {
-    auto& parent = *parent_it++;
+    BPNode* parent;
+    if (new_node->header().parent_id == _root->header().node_id) {
+      // Update root node that was not in children list
+      parent = _root.get();
+    } else {
+      parent = &(*parent_it);
+    }
 
     // Parent is full and needs to be split
-    if (parent.header().num_keys == _max_keys_per_node) {
-      auto split_result = parent.split_parent(new_node->header().node_id, split_key);
+    if (parent->header().num_keys == _max_keys_per_node) {
+      auto split_result = parent->split_parent(split_key, new_node->header().node_id);
       new_node = std::make_unique<BPNode>(std::move(split_result.first));
       split_key = split_result.second;
 
       new_node->mutable_header().node_id = _file_manager.get_next_node_position();
       _file_manager.write_node(*new_node);
-      _file_manager.write_node(parent);
+      _file_manager.write_node(*parent);
     } else {
-      parent.insert(split_key, new_node->header().node_id);
+      parent->insert(split_key, new_node->header().node_id);
       new_node = nullptr;
     }
+
+    ++parent_it;
   }
 
-  // The last child had to be split, so we need a new root
+  // The old root had to be split, so we need a new root
   if (new_node) {
     BPNodeHeader node_header{};
     node_header.node_id = _file_manager.get_next_node_position();
@@ -130,15 +136,11 @@ void DBManager::put(const FileKey key, const FileValue& value) {
     _file_manager.write_node_header(new_node->header());
 
     // Take left-most key of new node as key in parent
-    std::vector<FileKey> new_root_keys = {new_node->keys().front()};
+    std::vector<FileKey> new_root_keys = {split_key};
     std::vector<NodeID> new_root_children = {_root->header().node_id, new_node->header().node_id};
     _root = std::make_unique<BPNode>(node_header, std::move(new_root_keys), std::move(new_root_children));
 
     _file_manager.update_root_offset(node_header.node_id);
-
-    auto h = _file_manager.load_db();
-    auto x = _file_manager.load_node(14);
-
     _file_manager.write_node(*_root);
   }
 }

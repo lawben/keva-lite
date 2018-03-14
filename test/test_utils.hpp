@@ -7,7 +7,6 @@
 #include "bp_node.hpp"
 #include "file_manager.hpp"
 
-
 namespace keva {
 
 std::string get_random_temp_file_name();
@@ -29,7 +28,7 @@ struct TestBPNode {
     return node;
   }
 
-  bool is_leaf;
+  bool is_leaf{};
   std::vector<FileKey> keys;
   std::vector<TestBPNode> children;
 };
@@ -37,5 +36,10 @@ struct TestBPNode {
 bool nodes_equal(const BPNode& node, const TestBPNode& test_node);
 
 bool trees_equal(const BPNode& root, const TestBPNode& test_root, const FileManager& file_manager);
+
+std::string truncate_string(const std::string& str, const uint32_t max_len);
+std::string truncate_string(const FileKey key, const uint32_t max_len);
+
+void print_tree(const BPNode& root, const FileManager& file_manager);
 
 };  // namespace keva

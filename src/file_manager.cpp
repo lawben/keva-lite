@@ -64,13 +64,13 @@ DBHeader FileManager::load_db() const {
   return db_header;
 }
 
-void FileManager::update_root_offset(FileOffset offset) {
+void FileManager::update_root_offset(const FileOffset offset) {
   _db->seekp(6);
   DebugAssert(!_db->fail(), "Failed to set position in output stream.");
   write_value(offset);
 }
 
-BPNodeHeader FileManager::load_node_header(FileOffset offset) const {
+BPNodeHeader FileManager::load_node_header(const FileOffset offset) const {
   DebugAssert(offset != InvalidNodeID, "Trying to read from invalid offset");
   _db->seekg(offset);
   DebugAssert(!_db->fail(), "Failed to set position in input stream.");
@@ -86,14 +86,18 @@ BPNodeHeader FileManager::load_node_header(FileOffset offset) const {
   return node_header;
 }
 
-BPNode FileManager::load_node(FileOffset offset) const {
+BPNode FileManager::load_node(const FileOffset offset) const {
   DebugAssert(offset != InvalidNodeID, "Trying to read from invalid offset");
   const auto node_header = load_node_header(offset);
 
-  const auto num_children = _max_keys_per_node + (node_header.is_leaf ? 0 : 1u);
+  const auto extra_child = node_header.is_leaf ? 0 : 1u;
 
+  // Node has loaded all keys but some are null. Resize here to not grow above max nodes per key limit.
   auto keys = read_values<FileKey>(_max_keys_per_node);
-  auto children = read_values<NodeID>(num_children);
+  keys.resize(node_header.num_keys);
+
+  auto children = read_values<NodeID>(_max_keys_per_node + extra_child);
+  children.resize(node_header.num_keys + extra_child);
 
   return BPNode(node_header, std::move(keys), std::move(children));
 }
@@ -134,7 +138,7 @@ void FileManager::write_node(const BPNode& node) {
   _db->flush();
 }
 
-FileValue FileManager::get_value(FileOffset value_pos) const {
+FileValue FileManager::get_value(const FileOffset value_pos) const {
   // No value to be read
   if (value_pos == InvalidNodeID) return FileValue();
 
@@ -165,14 +169,15 @@ FileOffset FileManager::get_next_node_position() { return _get_next_position(BP_
 
 FileOffset FileManager::get_next_value_position(const FileValue& value) { return _get_next_position(value.size()); }
 
-FileOffset FileManager::_get_next_position(FileOffset move_forward) {
+FileOffset FileManager::_get_next_position(const FileOffset move_forward) {
   const auto next_position = _next_position;
   _next_position += move_forward;
   return next_position;
 }
+
 FileOffset FileManager::_get_file_size() {
   _db->seekg(0, std::ios_base::beg);
-  std::ifstream::pos_type begin_pos = _db->tellg();
+  const auto begin_pos = _db->tellg();
   _db->seekg(0, std::ios_base::end);
   return static_cast<FileOffset>(_db->tellg() - begin_pos);
 }
