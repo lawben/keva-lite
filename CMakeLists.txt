@@ -26,7 +26,7 @@ target_link_libraries(keva-lite-example keva-lite)
 
 add_subdirectory(test)
 
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_definitions(-DIS_DEBUG=1)
 else()
     add_definitions(-DIS_DEBUG=0)
