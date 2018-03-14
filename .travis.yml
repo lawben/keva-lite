@@ -19,8 +19,7 @@ addons:
       - cmake-data
       - gcc-7
       - g++-7
-      - clang-3.9
-      - cppcheck
+      - clang-5.0
 
 compiler:
   - clang
