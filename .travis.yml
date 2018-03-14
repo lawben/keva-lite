@@ -1,9 +1,7 @@
 language: cpp
 
-install:
-- if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
-- echo ${PATH}
-- ${CXX} --version
+os: linux
+dist: trusty
 
 compiler:
   - clang
