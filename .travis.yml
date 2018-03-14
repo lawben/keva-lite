@@ -1,15 +1,25 @@
 language: cpp
 
+install:
+- if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+- echo ${PATH}
+- ${CXX} --version
+
 compiler:
   - clang
   - gcc
 
+env:
+  matrix:
+    - CMAKE_CONFIGURATION=release BUILD_DIR=build_release
+    - CMAKE_CONFIGURATION=debug BUILD_DIR=build_debug
+
 script:
   - mkdir -p build
   - cd build
-  - cmake ..
-  - make
-  - ./keva-test
+  - cmake .. && make
+  - cmake --build . --target keva-test
+  - cmake --build . --target keva-lite-example
 
 notifications:
   email: false
