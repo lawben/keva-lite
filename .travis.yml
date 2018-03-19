@@ -1,7 +1,7 @@
 language: cpp
 
-os: linux
 dist: trusty
+osx_image: xcode9.2
 
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-7" CC="gcc-7"; fi
@@ -21,6 +21,10 @@ addons:
       - g++-7
       - clang-5.0
 
+os:
+  - linux
+  - osx
+
 compiler:
   - clang
   - gcc
@@ -30,11 +34,16 @@ env:
     - DCMAKE_BUILD_TYPE=Debug BUILD_DIR=build_debug
     - DCMAKE_BUILD_TYPE=Release BUILD_DIR=build_release
 
+matrix:
+  exclude:
+  - os: osx
+    compiler: gcc
+
 script:
   - mkdir -p build
   - cd build
   - cmake .. && make -j
-  - test/keva-test
+  - cmake --build . --target keva-test
 
 notifications:
   email: false
