@@ -19,7 +19,7 @@ class BPNodeTest : public ::testing::Test {
 };
 
 TEST_F(BPNodeTest, SimpleCreate) {
-  BPNode node{_header, {}, {}};
+  BPNode node{{}, {}, {}};
   EXPECT_EQ(node.keys().size(), 0u);
   EXPECT_EQ(node.children().size(), 0u);
 }

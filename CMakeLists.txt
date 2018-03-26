@@ -31,4 +31,3 @@ add_executable(keva-lite-example src/main.cpp)
 target_link_libraries(keva-lite-example keva-lite)
 
 add_subdirectory(test)
-add_test(NAME keva-test COMMAND keva-test)
