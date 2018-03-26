@@ -262,4 +262,4 @@ bool subtree_is_valid(const BPNode& node, const FileKey lower, const FileKey upp
   return true;
 }
 
-};  // namespace keva
+}  // namespace keva

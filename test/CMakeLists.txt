@@ -1,12 +1,15 @@
 set (
         TEST_SOURCE_FILES
 
-        keva_test_main.cpp
+        db_manager_test.cpp
         bp_node_test.cpp
-        utils_test.cpp
+        file_manager_test.cpp
+        keva_test_main.cpp
         keva_lite_test.cpp
+        test_utils.cpp
         test_utils.hpp
-        db_manager_test.cpp test_utils.cpp file_manager_test.cpp)
+        utils_test.cpp
+)
 
 enable_testing()
 include(External_GTest.cmake)

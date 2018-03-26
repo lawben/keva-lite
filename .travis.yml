@@ -5,8 +5,8 @@ dist: trusty
 osx_image: xcode9.2
 
 install:
-  - if [[ "$CXX" = "g++" ]]; then export CXX="g++-7" CC="gcc-7"; fi
-#  - if [[ "$CXX" = clang++ ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
+  - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
+  - if [[ $CXX = clang++ ] && [ "$UNAME" == "linux" ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
   - echo ${PATH}
   - ${CXX} --version
 

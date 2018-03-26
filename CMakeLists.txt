@@ -19,15 +19,16 @@ set (
 
 add_compile_options(-std=c++1z -Wall -Wextra -pedantic -Werror)
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    add_definitions(-DIS_DEBUG=1)
+else()
+    add_definitions(-DIS_DEBUG=0)
+endif()
+
 add_library(keva-lite STATIC ${SOURCE_FILES})
 
 add_executable(keva-lite-example src/main.cpp)
 target_link_libraries(keva-lite-example keva-lite)
 
 add_subdirectory(test)
-
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    add_definitions(-DIS_DEBUG=1)
-else()
-    add_definitions(-DIS_DEBUG=0)
-endif()
+add_test(NAME keva-test COMMAND keva-test)
