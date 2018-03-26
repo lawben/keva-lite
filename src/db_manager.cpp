@@ -41,7 +41,7 @@ void DBManager::put(const FileKey key, const FileValue& value) {
   while (true) {
     if (node->header().is_leaf) {
       const auto insert_pos = node->find_value_insert_position(key);
-      if (insert_pos < node->keys().size() && node->keys().at(insert_pos) == key) {
+      if (insert_pos < node->keys().size() && node->keys()[insert_pos] == key) {
         throw std::runtime_error("Key '" + std::to_string(key) + "' already exists.");
       }
 
@@ -78,7 +78,6 @@ void DBManager::put(const FileKey key, const FileValue& value) {
 
       // Write the node that we didn't write earlier
       _file_manager.write_node(*node);
-
       break;
     } else {  // node is internal node
       const auto child_pos = node->find_child(key);
@@ -87,19 +86,29 @@ void DBManager::put(const FileKey key, const FileValue& value) {
     }
   }
 
+  // No new node was created through splitting, nothing more to do
   if (!new_node) return;
+
+  const auto split_leaf = !children.empty();
+  if (split_leaf) {
+    // Remove leaf in list, as we don't want to view it as a parent further down
+    children.pop_back();
+  }
 
   auto parent_it = children.rbegin();
   auto split_key = new_node->keys().front();
 
   // New nodes through splitting need to be added to parents
-  while (new_node && parent_it != children.rend()) {
+  while (new_node && split_leaf) {
     BPNode* parent;
     if (new_node->header().parent_id == _root->header().node_id) {
       // Update root node that was not in children list
       parent = _root.get();
-    } else {
+    } else if (parent_it < children.rend()) {
       parent = &(*parent_it);
+    } else {
+      // Need to create new root
+      break;
     }
 
     // Parent is full and needs to be split
@@ -113,7 +122,10 @@ void DBManager::put(const FileKey key, const FileValue& value) {
       _file_manager.write_node(*parent);
     } else {
       parent->insert(split_key, new_node->header().node_id);
-      new_node = nullptr;
+      _file_manager.write_node(*parent);
+
+      // No further splitting needs to be done
+      return;
     }
 
     ++parent_it;
@@ -145,9 +157,9 @@ void DBManager::put(const FileKey key, const FileValue& value) {
   }
 }
 
-const BPNode& DBManager::get_root() { return *_root; }
+const BPNode& DBManager::get_root() const { return *_root; }
 
-const FileManager& DBManager::get_file_manager() { return _file_manager; }
+const FileManager& DBManager::get_file_manager() const { return _file_manager; }
 
 BPNode DBManager::_init_root() {
   BPNodeHeader node_header{};

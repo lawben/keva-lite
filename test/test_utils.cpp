@@ -187,4 +187,79 @@ void print_tree(const BPNode& node, const FileManager& file_manager) {
   }
 }
 
+bool tree_is_valid(const DBManager& db_manager) {
+  const auto& root = db_manager.get_root();
+
+  const auto& keys = root.keys();
+  const auto& children = root.children();
+  const auto num_children = root.children().size();
+
+  if (root.header().num_keys == 0 && !children.empty()) return false;
+  if (root.header().num_keys != keys.size()) return false;
+
+  if (root.header().is_leaf) {
+    if (keys.size() != num_children) return false;
+  } else {
+    if (keys.size() + 1 != num_children) return false;
+  }
+
+  if (!std::is_sorted(root.keys().begin(), root.keys().end())) return false;
+
+  if (!root.header().is_leaf) {
+    const auto& file_manager = db_manager.get_file_manager();
+
+    const auto& smallest_child = file_manager.load_node(root.children()[0]);
+    if (!subtree_is_valid(smallest_child, 0u, keys[0], file_manager)) return false;
+
+    for (auto i = 1u; i < num_children - 1; ++i) {
+      const auto child = file_manager.load_node(children[i]);
+      if (!subtree_is_valid(child, keys[i - 1], keys[i], file_manager)) return false;
+    }
+
+    const auto& largest_child = file_manager.load_node(children[num_children - 1]);
+    if (!subtree_is_valid(largest_child, keys[keys.size() - 1], std::numeric_limits<FileKey>::max(), file_manager)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool subtree_is_valid(const BPNode& node, const FileKey lower, const FileKey upper, const FileManager& file_manager) {
+  const auto& keys = node.keys();
+  const auto& children = node.children();
+  const auto num_children = node.children().size();
+  const auto min_num_children = static_cast<const uint16_t>((file_manager.max_keys_per_node() + 1) / 2);
+
+  if (node.header().num_keys != keys.size()) return false;
+  if (num_children < min_num_children) return false;
+
+  if (node.header().is_leaf) {
+    if (keys.size() != num_children) return false;
+  } else {
+    if (keys.size() + 1 != num_children) return false;
+  }
+
+  if (!std::is_sorted(keys.begin(), keys.end())) return false;
+
+  for (const auto key : keys) {
+    if (key < lower || key > upper) return false;
+  }
+
+  if (!node.header().is_leaf) {
+    const auto& smallest_child = file_manager.load_node(node.children()[0]);
+    if (!subtree_is_valid(smallest_child, lower, keys[0], file_manager)) return false;
+
+    for (auto i = 1u; i < num_children - 1; ++i) {
+      const auto child = file_manager.load_node(children[i]);
+      if (!subtree_is_valid(child, keys[i - 1], keys[i], file_manager)) return false;
+    }
+
+    const auto& largest_child = file_manager.load_node(children[num_children - 1]);
+    if (!subtree_is_valid(largest_child, keys[num_children - 1], upper, file_manager))  return false;
+  }
+
+  return true;
+}
+
 };  // namespace keva

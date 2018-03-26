@@ -165,6 +165,8 @@ FileOffset FileManager::insert_value(const FileValue& value) {
   return insert_pos;
 }
 
+uint16_t FileManager::max_keys_per_node() const { return _max_keys_per_node; }
+
 FileOffset FileManager::get_next_node_position() { return _get_next_position(BP_NODE_SIZE); }
 
 FileOffset FileManager::get_next_value_position(const FileValue& value) { return _get_next_position(value.size()); }
