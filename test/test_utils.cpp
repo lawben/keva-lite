@@ -28,9 +28,9 @@ void print_vector_not_equal(const std::vector<T>& got, const std::vector<T>& exp
   print_vector_error(got);
   std::cout << "Expected:\n\t";
   print_vector_error(expected);
-};
-
 }
+
+}  // namespace
 
 namespace keva {
 
