@@ -65,7 +65,7 @@ class FileManager : public Noncopyable {
   const uint16_t _value_size;
   uint16_t _max_keys_per_node;
 
-  const uint32_t _file_flags = std::ios::binary | std::ios::in | std::ios::out;
+  const std::ios::openmode _file_flags = std::ios::binary | std::ios::in | std::ios::out;
 };
 
 template <typename T>

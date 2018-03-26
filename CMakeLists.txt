@@ -17,7 +17,7 @@ set (
         src/file_manager.hpp
 )
 
-add_compile_options(-std=c++1z -Wall -Wextra -pedantic) # -Werror)
+add_compile_options(-std=c++1z -Wall -Wextra -pedantic -Werror)
 
 add_library(keva-lite STATIC ${SOURCE_FILES})
 
