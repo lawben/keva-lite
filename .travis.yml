@@ -29,33 +29,60 @@ addons:
 #  - clang
 #  - gcc
 
-env:
-  matrix:
-    - DCMAKE_BUILD_TYPE=Debug BUILD_DIR=build_debug
-    - DCMAKE_BUILD_TYPE=Release BUILD_DIR=build_release
+#env:
+#  matrix:
+#    - DCMAKE_BUILD_TYPE=Debug BUILD_DIR=build_debug
+#    - DCMAKE_BUILD_TYPE=Release BUILD_DIR=build_release
 
 matrix:
   include:
-    # Linux + GCC
+    # Linux + GCC + debug
     - os: linux
-      apt:
-        packages:
-          - gcc-7
-          - g++-7
-      env: CXX="g++-7" CC="gcc-7"
+      addons:
+        apt:
+          packages:
+            - gcc-7
+            - g++-7
+      env: CXX="g++-7" CC="gcc-7" DCMAKE_BUILD_TYPE=Debug
       compiler: gcc
 
-    # Linux + clang
+    # Linux + GCC + release
     - os: linux
-      apt:
-        packages:
-          - clang-5.0
-      env: CXX="clang++-5.0" CC="clang-5.0"
+      addons:
+        apt:
+          packages:
+            - gcc-7
+            - g++-7
+      env: CXX="g++-7" CC="gcc-7" DCMAKE_BUILD_TYPE=Release
+      compiler: gcc
+
+    # Linux + clang + debug
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - clang-5.0
+      env: CXX="clang++-5.0" CC="clang-5.0" DCMAKE_BUILD_TYPE=Debug
       compiler: clang
 
-    # OSX + apple-clang
+    # Linux + clang + release
+    - os: linux
+      addons:
+        apt:
+          packages:
+            - clang-5.0
+      env: CXX="clang++-5.0" CC="clang-5.0" DCMAKE_BUILD_TYPE=Release
+      compiler: clang
+
+    # OSX + apple-clang + debug
     - os: osx
       compiler: clang
+      env: DCMAKE_BUILD_TYPE=Debug
+
+    # OSX + apple-clang + release
+    - os: osx
+      compiler: clang
+      env: DCMAKE_BUILD_TYPE=Release
 
 
 script:
