@@ -21,8 +21,8 @@ class DBManager : public Noncopyable {
 
   void remove(FileKey key);
 
-  const FileManager& get_file_manager();
-  const BPNode& get_root();
+  const FileManager& get_file_manager() const;
+  const BPNode& get_root() const;
 
  protected:
   BPNode _init_root();

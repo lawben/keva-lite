@@ -34,6 +34,8 @@ class FileManager : public Noncopyable {
   FileValue get_value(FileOffset value_pos) const;
   FileOffset insert_value(const FileValue& value);
 
+  uint16_t max_keys_per_node() const;
+
   FileOffset get_next_value_position(const FileValue& value);
   FileOffset get_next_node_position();
 

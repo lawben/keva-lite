@@ -3,9 +3,10 @@
 #include <string>
 #include <vector>
 
-#include "types.hpp"
 #include "bp_node.hpp"
+#include "db_manager.hpp"
 #include "file_manager.hpp"
+#include "types.hpp"
 
 namespace keva {
 
@@ -41,5 +42,8 @@ std::string truncate_string(const std::string& str, const uint32_t max_len);
 std::string truncate_string(const FileKey key, const uint32_t max_len);
 
 void print_tree(const BPNode& root, const FileManager& file_manager);
+
+bool tree_is_valid(const DBManager& db_manager);
+bool subtree_is_valid(const BPNode& node, const FileKey lower, const FileKey upper, const FileManager& file_manager);
 
 };  // namespace keva
