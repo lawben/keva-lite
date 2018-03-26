@@ -6,7 +6,7 @@ osx_image: xcode9.2
 
 install:
   - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
-  - if [[ $CXX = clang++ ] && [ $TRAVIS_OS_NAME = linux ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
+  - if [[ $CXX = clang++ && $TRAVIS_OS_NAME = linux ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
   - ${CXX} --version
 
 addons:
