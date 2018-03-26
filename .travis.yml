@@ -4,30 +4,30 @@ sudo: false
 dist: trusty
 osx_image: xcode9.2
 
-install:
-  - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
-  - if [[ $CXX = clang++ && $TRAVIS_OS_NAME = linux ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
-  - ${CXX} --version
+#install:
+#  - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
+#  - if [[ $CXX = clang++ && $TRAVIS_OS_NAME = linux ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
+#  - ${CXX} --version
 
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-trusty-5.0
-    packages:
-      - cmake
-      - cmake-data
-      - gcc-7
-      - g++-7
-      - clang-5.0
+#    packages:
+#      - cmake
+#      - cmake-data
+#      - gcc-7
+#      - g++-7
+#      - clang-5.0
 
-os:
-  - linux
-  - osx
-
-compiler:
-  - clang
-  - gcc
+#os:
+#  - linux
+#  - osx
+#
+#compiler:
+#  - clang
+#  - gcc
 
 env:
   matrix:
@@ -35,16 +35,34 @@ env:
     - DCMAKE_BUILD_TYPE=Release BUILD_DIR=build_release
 
 matrix:
-  exclude:
-  - os: osx
-    compiler: gcc
+  include:
+    # Linux + GCC
+    - os: linux
+      apt:
+        packages:
+          - gcc-7
+          - g++-7
+      env: CXX="g++-7" CC="gcc-7"
+      compiler: gcc
+
+    # Linux + clang
+    - os: linux
+      apt:
+        packages:
+          - clang-5.0
+      env: CXX="clang++-5.0" CC="clang-5.0"
+      compiler: clang
+
+    # OSX + apple-clang
+    - os: osx
+      compiler: clang
+
 
 script:
   - mkdir -p build
   - cd build
   - cmake .. && make -j
-  - cmake --build . --target keva-test
-  - ls -a
+  - cmake --build . --target all
   - ./test/keva-test
 
 notifications:
