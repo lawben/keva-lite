@@ -18,7 +18,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-7
             - g++-7
       env: DCMAKE_BUILD_TYPE=Debug
       compiler: gcc
@@ -30,7 +29,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-7
             - g++-7
       env: DCMAKE_BUILD_TYPE=Release
       compiler: gcc
