@@ -102,7 +102,7 @@
 #notifications:
 #  email: false
 
-language: cpp
+#language: cpp
 
 sudo: false
 dist: trusty
@@ -129,28 +129,28 @@ addons:
 
 os:
   - linux
-  - osx
+#  - osx
 
 compiler:
   - clang
-  - gcc
+#  - gcc
 
 env:
   matrix:
     - DCMAKE_BUILD_TYPE=Debug BUILD_DIR=build_debug
-    - DCMAKE_BUILD_TYPE=Release BUILD_DIR=build_release
+#    - DCMAKE_BUILD_TYPE=Release BUILD_DIR=build_release
 
-matrix:
-  exclude:
-  - os: osx
-    compiler: gcc
+#matrix:
+#  exclude:
+#  - os: osx
+#    compiler: gcc
 
 script:
   - mkdir -p build
   - cd build
   - cmake .. && make -j
   - cmake --build . --target keva-test
-  - ./keva-test
+  - ./test/keva-test
 
 notifications:
   email: false
