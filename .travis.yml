@@ -83,3 +83,4 @@ script:
 install:
   - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
   - ${CXX} --version
+  - export ASAN_OPTIONS=detect_leaks=0  # this sadly fails in travis, so we can't use it :(
