@@ -39,8 +39,8 @@ else()
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
 endif()
 
-option(ENABLE_SANITIZE "Set to ON to build with ASAN and UBSAN enabled. Default: OFF" OFF)
-if (${ENABLE_SANITIZE})
+# Set to build with ASAN and UBSAN enabled
+if (DEFINED ENV{ENABLE_SANITIZE})
     set(SANITIZE_FLAGS "-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZE_FLAGS}")
