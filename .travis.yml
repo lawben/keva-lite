@@ -4,8 +4,8 @@ sudo: false
 dist: trusty
 osx_image: xcode9.2
 
-#branches:
-#  only: master
+branches:
+  only: master
 
 notifications:
   email: false
@@ -83,4 +83,3 @@ script:
 install:
   - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
   - ${CXX} --version
-  - export ASAN_OPTIONS=detect_leaks=0
