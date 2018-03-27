@@ -63,8 +63,8 @@ matrix:
       env: DCMAKE_BUILD_TYPE=Release
 
 script:
-  - mkdir -p build
-  - cd build
+  - cd "${TRAVIS_BUILD_DIR}"
+  - mkdir -p build && cd build
   - cmake .. make -j
   - cmake --build . --target all
   - ./test/keva-test
@@ -80,7 +80,7 @@ install:
   - mkdir -p "${DEPS_DIR}"
   - cd "${DEPS_DIR}"
 
-  ### Have to install libc++ for clang ###
+  ### Have to install libc++ for clang on linux ###
   - |
     LLVM_INSTALL=${DEPS_DIR}/llvm/install
     # if in linux and compiler clang and llvm not installed
