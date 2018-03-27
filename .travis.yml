@@ -6,91 +6,91 @@ osx_image: xcode9.2
 
 install:
   - ${CXX} --version
-  - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
-  - if [[ $CXX = clang++ ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
+#  - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
+#  - if [[ $CXX = clang++ ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
   - ${CXX} --version
 
 matrix:
   include:
     # Linux + clang + debug
     - os: linux
-      addons:
-        apt:
-          sources:
+#      addons:
+#        apt:
+#          sources:
 #          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: DCMAKE_BUILD_TYPE=Debug COMPILER=clang++5.0 #DCMAKE_C_COMPILER=clang-5 DCMAKE_CXX_COMPILER=clang++-5
+#          - llvm-toolchain-trusty-5.0
+#          packages:
+#            - clang-5.0
+      env: DCMAKE_BUILD_TYPE=Debug #COMPILER=clang++5.0 #DCMAKE_C_COMPILER=clang-5 DCMAKE_CXX_COMPILER=clang++-5
       compiler: clang
 
-    # Linux + clang + release
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: DCMAKE_BUILD_TYPE=Release
-      compiler: clang
-
-    # Linux + GCC + debug
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-      env: DCMAKE_BUILD_TYPE=Debug
-      compiler: gcc
-
-    # Linux + GCC + release
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-      env: DCMAKE_BUILD_TYPE=Release
-      compiler: gcc
-
-    # Linux + clang + release + asan + ubsan
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: DCMAKE_BUILD_TYPE=Release DENABLE_SANITIZE=ON
-      compiler: clang
-
-    # Linux + clang + debug + asan + ubsan
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: DCMAKE_BUILD_TYPE=Debug DENABLE_SANITIZE=ON
-      compiler: clang
-
-    # OSX + apple-clang + debug
-    - os: osx
-      compiler: clang
-      env: DCMAKE_BUILD_TYPE=Debug
-
-    # OSX + apple-clang + release
-    - os: osx
-      compiler: clang
-      env: DCMAKE_BUILD_TYPE=Release
+#    # Linux + clang + release
+#    - os: linux
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-trusty-5.0
+#          packages:
+#            - clang-5.0
+#      env: DCMAKE_BUILD_TYPE=Release
+#      compiler: clang
+#
+#    # Linux + GCC + debug
+#    - os: linux
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - g++-7
+#      env: DCMAKE_BUILD_TYPE=Debug
+#      compiler: gcc
+#
+#    # Linux + GCC + release
+#    - os: linux
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - g++-7
+#      env: DCMAKE_BUILD_TYPE=Release
+#      compiler: gcc
+#
+#    # Linux + clang + release + asan + ubsan
+#    - os: linux
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-trusty-5.0
+#          packages:
+#            - clang-5.0
+#      env: DCMAKE_BUILD_TYPE=Release DENABLE_SANITIZE=ON
+#      compiler: clang
+#
+#    # Linux + clang + debug + asan + ubsan
+#    - os: linux
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#            - llvm-toolchain-trusty-5.0
+#          packages:
+#            - clang-5.0
+#      env: DCMAKE_BUILD_TYPE=Debug DENABLE_SANITIZE=ON
+#      compiler: clang
+#
+#    # OSX + apple-clang + debug
+#    - os: osx
+#      compiler: clang
+#      env: DCMAKE_BUILD_TYPE=Debug
+#
+#    # OSX + apple-clang + release
+#    - os: osx
+#      compiler: clang
+#      env: DCMAKE_BUILD_TYPE=Release
 
 
 script:
