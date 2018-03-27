@@ -45,16 +45,16 @@ matrix:
       env: DCMAKE_BUILD_TYPE=Release
       compiler: gcc
 
-    # Linux + clang + release + asan + ubsan
-    - os: linux
-      addons: *clang5
-      env: DCMAKE_BUILD_TYPE=Release DENABLE_SANITIZE=ON
-      compiler: clang
-
     # Linux + clang + debug + asan + ubsan
     - os: linux
       addons: *clang5
       env: DCMAKE_BUILD_TYPE=Debug DENABLE_SANITIZE=ON
+      compiler: clang
+
+    # Linux + clang + release + asan + ubsan
+    - os: linux
+      addons: *clang5
+      env: DCMAKE_BUILD_TYPE=Release DENABLE_SANITIZE=ON
       compiler: clang
 
     # OSX + apple-clang + debug
