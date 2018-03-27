@@ -20,7 +20,7 @@ set (
 add_compile_options(-std=c++1z -Wall -Wextra -pedantic -Werror)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    add_compile_options(-stdlib=libc++)
+    add_compile_options(-stdlib=libc++ -lc++ -lc++abi)
 endif()
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
