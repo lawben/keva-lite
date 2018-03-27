@@ -125,6 +125,7 @@ addons:
     - gcc-5
     - g++-5
     - clang-5.0
+    - clang++-5.0
     - cppcheck
 
 os:
