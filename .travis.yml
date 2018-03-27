@@ -123,8 +123,8 @@ addons:
     packages:
       - cmake
       - cmake-data
-#      - gcc-7
-#      - g++-7
+      - gcc-7
+      - g++-7
       - clang-5.0
 
 os:
