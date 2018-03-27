@@ -11,6 +11,32 @@ install:
 
 matrix:
   include:
+    # Linux + clang + debug
+    - os: linux
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env: DCMAKE_BUILD_TYPE=Debug
+        - CXX=clang++-5.0
+        - CC=clang-5.0
+      compiler: clang
+
+    # Linux + clang + release
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env: DCMAKE_BUILD_TYPE=Release
+      compiler: clang
+
     # Linux + GCC + debug
     - os: linux
       addons:
@@ -33,30 +59,6 @@ matrix:
       env: DCMAKE_BUILD_TYPE=Release
       compiler: gcc
 
-    # Linux + clang + debug
-    - os: linux
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: DCMAKE_BUILD_TYPE=Debug
-      compiler: clang
-
-    # Linux + clang + release
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: DCMAKE_BUILD_TYPE=Release
-      compiler: clang
-
     # Linux + clang + release + asan + ubsan
     - os: linux
       addons:
@@ -67,6 +69,18 @@ matrix:
           packages:
             - clang-5.0
       env: DCMAKE_BUILD_TYPE=Release DENABLE_SANITIZE=ON
+      compiler: clang
+
+    # Linux + clang + debug + asan + ubsan
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env: DCMAKE_BUILD_TYPE=Debug DENABLE_SANITIZE=ON
       compiler: clang
 
     # OSX + apple-clang + debug
