@@ -14,14 +14,14 @@ matrix:
   include:
     # Linux + clang + debug
     - os: linux
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-      env: DCMAKE_BUILD_TYPE=Debug DCMAKE_C_COMPILER=clang-5 DCMAKE_CXX_COMPILER=clang++-5
+#      addons:
+#        apt:
+#          sources:
+#          - ubuntu-toolchain-r-test
+#          - llvm-toolchain-trusty-5.0
+#          packages:
+#            - clang-5.0
+      env: DCMAKE_BUILD_TYPE=Debug #DCMAKE_C_COMPILER=clang-5 DCMAKE_CXX_COMPILER=clang++-5
       compiler: clang
 
     # Linux + clang + release
