@@ -150,7 +150,7 @@ matrix:
 script:
   - mkdir build
   - cd build
-  - cmake .. && make
+  - cmake -DCMAKE_CXX_COMPILER=/usr/local/clang-5.0.0/bin/clang++ .. && make
   - cmake --build . --target all
 
 notifications:
