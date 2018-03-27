@@ -88,7 +88,7 @@ install:
     echo ${TRAVIS_OS_NAME}
     echo ${CXX}
     echo $(ls -A ${LLVM_INSTALL})
-    if [[ "${TRAVIS_OS_NAME}" == "linux" && "${CXX}" == "clang++" ]]; then
+    if [[ "${TRAVIS_OS_NAME}" == "linux" && "${CXX}" == "clang++" && -n "$(ls -A ${LLVM_INSTALL})" ]]; then
       LLVM_VERSION="5.0.0";
       export CXX="clang++-5.0" CC="clang-5.0"
       LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
