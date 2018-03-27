@@ -14,6 +14,8 @@ matrix:
           - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
+            - libc++-dev
+            - libc++abi-dev
       env: DCMAKE_BUILD_TYPE=Debug
       compiler: clang
 
@@ -24,15 +26,15 @@ matrix:
 #      compiler: clang
 
     # Linux + GCC + debug
-    - os: linux
-      addons: &gcc7
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-      env: DCMAKE_BUILD_TYPE=Debug
-      compiler: gcc
+#    - os: linux
+#      addons: &gcc7
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - g++-7
+#      env: DCMAKE_BUILD_TYPE=Debug
+#      compiler: gcc
 
     # Linux + GCC + release
 #    - os: linux
@@ -41,10 +43,10 @@ matrix:
 #      compiler: gcc
 
     # Linux + clang + release + asan + ubsan
-    - os: linux
-      addons: *clang5
-      env: DCMAKE_BUILD_TYPE=Release DENABLE_SANITIZE=ON
-      compiler: clang
+#    - os: linux
+#      addons: *clang5
+#      env: DCMAKE_BUILD_TYPE=Release DENABLE_SANITIZE=ON
+#      compiler: clang
 
     # Linux + clang + debug + asan + ubsan
 #    - os: linux
@@ -53,9 +55,9 @@ matrix:
 #      compiler: clang
 
     # OSX + apple-clang + debug
-    - os: osx
-      compiler: clang
-      env: DCMAKE_BUILD_TYPE=Debug
+#    - os: osx
+#      compiler: clang
+#      env: DCMAKE_BUILD_TYPE=Debug
 
     # OSX + apple-clang + release
 #    - os: osx
@@ -80,32 +82,32 @@ install:
   - cd "${DEPS_DIR}"
 
   ### Have to install libc++ for clang on linux ###
-  - |
-    LLVM_INSTALL=${DEPS_DIR}/llvm/install
-    mkdir -p ${LLVM_INSTALL}
-    echo ${LLVM_INSTALL}
-    # if in linux and compiler clang and llvm not installed
-    echo ${TRAVIS_OS_NAME}
-    echo ${CXX}
-    echo $(ls -A ${LLVM_INSTALL})
-    if [[ "${TRAVIS_OS_NAME}" == "linux" && "${CXX}" == "clang++" && -n "$(ls -A ${LLVM_INSTALL})" ]]; then
-      LLVM_VERSION="5.0.0";
-      export CXX="clang++-5.0" CC="clang-5.0"
-      LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
-      LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
-      LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
-      mkdir -p llvm llvm/build llvm/projects/libcxx llvm/projects/libcxxabi
-      travis_retry wget -O - ${LLVM_URL} | tar --strip-components=1 -xJ -C llvm
-      travis_retry wget -O - ${LIBCXX_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxx
-      travis_retry wget -O - ${LIBCXXABI_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxxabi
-      (cd llvm/build && cmake .. -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL})
-      (cd llvm/build/projects/libcxx && make install -j2)
-      (cd llvm/build/projects/libcxxabi && make install -j2)
-      export CXXFLAGS="-isystem ${LLVM_INSTALL}/include/c++/v1"
-      export LDFLAGS="-L ${LLVM_INSTALL}/lib -l c++ -l c++abi"
-      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_INSTALL}/lib"
-      echo ${LD_LIBRARY_PATH}
-    fi
+#  - |
+#    LLVM_INSTALL=${DEPS_DIR}/llvm/install
+#    mkdir -p ${LLVM_INSTALL}
+#    echo ${LLVM_INSTALL}
+#    # if in linux and compiler clang and llvm not installed
+#    echo ${TRAVIS_OS_NAME}
+#    echo ${CXX}
+#    echo $(ls -A ${LLVM_INSTALL})
+#    if [[ "${TRAVIS_OS_NAME}" == "linux" && "${CXX}" == "clang++" && -n "$(ls -A ${LLVM_INSTALL})" ]]; then
+#      LLVM_VERSION="5.0.0";
+#      export CXX="clang++-5.0" CC="clang-5.0"
+#      LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
+#      LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
+#      LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
+#      mkdir -p llvm llvm/build llvm/projects/libcxx llvm/projects/libcxxabi
+#      travis_retry wget -O - ${LLVM_URL} | tar --strip-components=1 -xJ -C llvm
+#      travis_retry wget -O - ${LIBCXX_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxx
+#      travis_retry wget -O - ${LIBCXXABI_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxxabi
+#      (cd llvm/build && cmake .. -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL})
+#      (cd llvm/build/projects/libcxx && make install -j2)
+#      (cd llvm/build/projects/libcxxabi && make install -j2)
+#      export CXXFLAGS="-isystem ${LLVM_INSTALL}/include/c++/v1"
+#      export LDFLAGS="-L ${LLVM_INSTALL}/lib -l c++ -l c++abi"
+#      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${LLVM_INSTALL}/lib"
+#      echo ${LD_LIBRARY_PATH}
+#    fi
   ###
 
 notifications:
