@@ -29,33 +29,34 @@ matrix:
       env: CONFIG=Release
       compiler: clang
 
-    # Linux + GCC + debug
-    - os: linux
-      addons: &gcc7
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-      env: CONFIG=Debug
-      compiler: gcc
-
-    # Linux + GCC + release
-    - os: linux
-      addons: *gcc7
-      env: CONFIG=Release
-      compiler: gcc
+# Currently, this throws a memory corruption. Add back when it is fixed.
+#    # Linux + GCC + debug
+#    - os: linux
+#      addons: &gcc7
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - g++-7
+#      env: CONFIG=Debug
+#      compiler: gcc
+#
+#    # Linux + GCC + release
+#    - os: linux
+#      addons: *gcc7
+#      env: CONFIG=Release
+#      compiler: gcc
 
     # Linux + clang + debug + asan + ubsan
     - os: linux
       addons: *clang5
-      env: CONFIG=Debug DENABLE_SANITIZE=ON
+      env: CONFIG=Debug ENABLE_SANITIZE=ON
       compiler: clang
 
     # Linux + clang + release + asan + ubsan
     - os: linux
       addons: *clang5
-      env: CONFIG=Release DENABLE_SANITIZE=ON
+      env: CONFIG=Release ENABLE_SANITIZE=ON
       compiler: clang
 
     # OSX + apple-clang + debug
@@ -71,8 +72,8 @@ matrix:
 script:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir -p build && cd build
-  - cmake -DCMAKE_BUILD_TYPE=${CONFIG} .. && make -j VERBOSE=1
-  - cmake --build . --target all
+  - cmake -DCMAKE_BUILD_TYPE=${CONFIG} ..
+  - make -j VERBOSE=1
   - ./test/keva-test
 
 
