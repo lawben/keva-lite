@@ -53,13 +53,13 @@ matrix:
     # Linux + clang + debug + asan + ubsan
     - os: linux
       addons: *clang5
-      env: CONFIG=Debug ENABLE_SANITIZE=ON
+      env: CONFIG=Debug ENABLE_SANITIZE=ON ASAN_OPTIONS=detect_leaks=0 # this sadly fails in travis, so we can't use it :(
       compiler: clang
 
     # Linux + clang + release + asan + ubsan
     - os: linux
       addons: *clang5
-      env: CONFIG=Release ENABLE_SANITIZE=ON
+      env: CONFIG=Release ENABLE_SANITIZE=ON ASAN_OPTIONS=detect_leaks=0
       compiler: clang
 
     # OSX + apple-clang + debug
@@ -83,4 +83,4 @@ script:
 install:
   - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
   - ${CXX} --version
-  - export ASAN_OPTIONS=detect_leaks=0  # this sadly fails in travis, so we can't use it :(
+  - export ASAN_OPTIONS=detect_leaks=0
