@@ -18,10 +18,10 @@ matrix:
       compiler: clang
 
     # Linux + clang + release
-    - os: linux
-      addons: *clang5
-      env: DCMAKE_BUILD_TYPE=Release
-      compiler: clang
+#    - os: linux
+#      addons: *clang5
+#      env: DCMAKE_BUILD_TYPE=Release
+#      compiler: clang
 
     # Linux + GCC + debug
     - os: linux
@@ -35,10 +35,10 @@ matrix:
       compiler: gcc
 
     # Linux + GCC + release
-    - os: linux
-      addons: *gcc7
-      env: DCMAKE_BUILD_TYPE=Release
-      compiler: gcc
+#    - os: linux
+#      addons: *gcc7
+#      env: DCMAKE_BUILD_TYPE=Release
+#      compiler: gcc
 
     # Linux + clang + release + asan + ubsan
     - os: linux
@@ -47,10 +47,10 @@ matrix:
       compiler: clang
 
     # Linux + clang + debug + asan + ubsan
-    - os: linux
-      addons: *clang5
-      env: DCMAKE_BUILD_TYPE=Debug DENABLE_SANITIZE=ON
-      compiler: clang
+#    - os: linux
+#      addons: *clang5
+#      env: DCMAKE_BUILD_TYPE=Debug DENABLE_SANITIZE=ON
+#      compiler: clang
 
     # OSX + apple-clang + debug
     - os: osx
@@ -58,9 +58,9 @@ matrix:
       env: DCMAKE_BUILD_TYPE=Debug
 
     # OSX + apple-clang + release
-    - os: osx
-      compiler: clang
-      env: DCMAKE_BUILD_TYPE=Release
+#    - os: osx
+#      compiler: clang
+#      env: DCMAKE_BUILD_TYPE=Release
 
 script:
   - cd "${TRAVIS_BUILD_DIR}"
