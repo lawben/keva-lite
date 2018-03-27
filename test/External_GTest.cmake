@@ -1,4 +1,5 @@
 # Taken from: https://gist.github.com/ClintLiddick/51deffb768a7319e715071aa7bd3a3ab
+find_package(Threads REQUIRED)
 include(ExternalProject)
 
 ExternalProject_Add(
