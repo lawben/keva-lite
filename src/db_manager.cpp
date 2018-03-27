@@ -5,12 +5,14 @@
 namespace keva {
 
 DBManager::DBManager(uint16_t value_size, uint16_t max_keys_per_node)
-    : _file_manager(value_size, max_keys_per_node), _max_keys_per_node(max_keys_per_node) {
+    : _file_manager(value_size, max_keys_per_node), _max_keys_per_node(max_keys_per_node), _value_size(value_size) {
   _root = std::make_unique<BPNode>(_init_root());
 }
 
 DBManager::DBManager(std::string db_file_name, uint16_t value_size, uint16_t max_keys_per_node)
-    : _file_manager(std::move(db_file_name), value_size, max_keys_per_node), _max_keys_per_node(max_keys_per_node) {
+    : _file_manager(std::move(db_file_name), value_size, max_keys_per_node),
+      _max_keys_per_node(max_keys_per_node),
+      _value_size(value_size) {
   _root = std::make_unique<BPNode>(_init_root());
 }
 
@@ -32,6 +34,8 @@ FileValue DBManager::get(FileKey key) const {
 }
 
 void DBManager::put(const FileKey key, const FileValue& value) {
+  DebugAssert(value.size() == _value_size || _value_size == 0,
+              "Cannot insert value with different size than specified!");
   std::vector<BPNode> children;
   children.reserve(10);
 

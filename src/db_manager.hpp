@@ -30,6 +30,7 @@ class DBManager : public Noncopyable {
   FileManager _file_manager;
   std::unique_ptr<BPNode> _root;
   uint16_t _max_keys_per_node;
+  uint16_t _value_size;
 };
 
 }  // namespace keva

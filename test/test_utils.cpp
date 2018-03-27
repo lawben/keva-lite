@@ -136,6 +136,11 @@ std::string truncate_string(const FileKey key, uint32_t width) {
 void print_tree(const BPNode& node, const FileManager& file_manager) {
   using namespace std;
 
+  if (node.keys().empty()) {
+    cout << "EMPTY ROOT @ " << node.header().node_id << endl << endl;
+    return;
+  }
+
   if (node.header().is_leaf) {
     cout << "LEAF @ " << node.header().node_id << endl;
     cout << string(20, '=') << endl;
@@ -256,7 +261,7 @@ bool subtree_is_valid(const BPNode& node, const FileKey lower, const FileKey upp
     }
 
     const auto& largest_child = file_manager.load_node(children[num_children - 1]);
-    if (!subtree_is_valid(largest_child, keys[num_children - 1], upper, file_manager))  return false;
+    if (!subtree_is_valid(largest_child, keys[keys.size() - 1], upper, file_manager))  return false;
   }
 
   return true;

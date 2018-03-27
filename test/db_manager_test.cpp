@@ -246,6 +246,27 @@ TEST_F(DBManagerTest, InternalNodeSplitBack) {
   EXPECT_EQ(left_internal.header().parent_id, root.header().node_id);
 }
 
+TEST_F(DBManagerTest, Put100Values) {
+  DBManager db_manager{8, 3};
+  const auto num_iterations = 100;
+
+  std::vector<uint64_t> keys(num_iterations);
+  std::vector<uint64_t> values(num_iterations);
+  for (auto i = 0u; i < num_iterations; ++i) {
+    keys[i] = i;
+    values[i] = i * i;
+  }
+
+  for (auto i = 0u; i < num_iterations; ++i) {
+    db_manager.put(keys[i], convert_to_file_value(values[i]));
+    if (!tree_is_valid(db_manager)) {
+      print_tree(db_manager.get_root(), db_manager.get_file_manager());
+      ASSERT_TRUE(false) << "FAILED ON INSERT OF " << i;
+    }
+  }
+}
+
+
 TEST_F(DBManagerTest, Put10kValues) {
   DBManager db_manager{0, 15};
   const auto num_iterations = 10'000;
