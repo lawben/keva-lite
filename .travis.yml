@@ -65,7 +65,7 @@ matrix:
 script:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir -p build && cd build
-  - cmake .. && make -j
+  - cmake .. && make -j VERBOSE=1
   - cmake --build . --target all
   - ./test/keva-test
 
@@ -105,57 +105,3 @@ install:
 
 notifications:
   email: false
-
-
-#language: cpp
-#
-#sudo: false
-#dist: trusty
-#osx_image: xcode9.2
-#
-#install:
-#  - if [[ "$CXX" = "g++" ]]; then export CXX="g++-7" CC="gcc-7"; fi
-#  - if [[ "$CXX" = "clang++" ]]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
-#  - echo ${PATH}
-#  - ${CXX} --version
-#
-#addons:
-#  apt:
-#    sources:
-#      - ubuntu-toolchain-r-test
-#      - llvm-toolchain-trusty-5.0
-#      - george-edison55-trusty-backports
-#    packages:
-#      - cmake
-#      - cmake-data
-#      - gcc-7
-#      - g++-7
-#      - clang-5.0
-#
-#os:
-#  - linux
-##  - osx
-#
-#compiler:
-#  - clang
-##  - gcc
-#
-#env:
-#  matrix:
-#    - DCMAKE_BUILD_TYPE=Debug BUILD_DIR=build_debug
-##    - DCMAKE_BUILD_TYPE=Release BUILD_DIR=build_release
-#
-##matrix:
-##  exclude:
-##  - os: osx
-##    compiler: gcc
-#
-#script:
-#  - mkdir -p build
-#  - cd build
-#  - cmake .. && make -j
-#  - cmake --build . --target keva-test
-#  - ./test/keva-test
-#
-#notifications:
-#  email: false
