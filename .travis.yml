@@ -65,7 +65,7 @@ matrix:
 script:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir -p build && cd build
-  - cmake .. make -j
+  - cmake .. && make -j
   - cmake --build . --target all
   - ./test/keva-test
 
