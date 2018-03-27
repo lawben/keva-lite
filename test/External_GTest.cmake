@@ -7,7 +7,7 @@ ExternalProject_Add(
         GIT_REPOSITORY https://github.com/google/googletest.git
         UPDATE_COMMAND ""
         INSTALL_COMMAND ""
-        BUILD_COMMAND make VERBOSE=1 CXX_FLAGS=${GTEST_FLAGS} #LDFLAGS=${CMAKE_EXE_LINKER_FLAGS} VERBOSE=1
+        BUILD_COMMAND make VERBOSE=1 CXX_FLAGS=${GTEST_FLAGS} LDFLAGS=${GTEST_LINKER_FLAGS}
         #LOG_DOWNLOAD ON  # enable if there are problems with building googltest
         #LOG_CONFIGURE ON
         #LOG_BUILD ON
