@@ -27,6 +27,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(GTEST_LINKER_FLAGS "${LDFLAGS} ${CMAKE_EXE_LINKER_FLAGS}")
 endif()
 
+# Set default build type if none was passed on the command line
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_definitions(-DIS_DEBUG=1)
 else()
