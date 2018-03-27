@@ -57,6 +57,18 @@ matrix:
       env: DCMAKE_BUILD_TYPE=Release
       compiler: clang
 
+    # Linux + clang + release + asan + ubsan
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env: DCMAKE_BUILD_TYPE=Release DENABLE_SANITIZE=ON
+      compiler: clang
+
     # OSX + apple-clang + debug
     - os: osx
       compiler: clang

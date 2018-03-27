@@ -102,7 +102,7 @@ template <>
 inline uint32_t FileManager::write_value(const bool& value) {
   const auto cast_value = static_cast<uint8_t>(value);
   _db->write(reinterpret_cast<const char*>(&cast_value), sizeof(uint8_t));
-  return 1;
+  return sizeof(uint8_t);
 }
 
 template <typename T>
