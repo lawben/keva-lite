@@ -73,7 +73,7 @@ script:
   - cd "${TRAVIS_BUILD_DIR}"
   - mkdir -p build && cd build
   - cmake -DCMAKE_BUILD_TYPE=${CONFIG} ..
-  - make -j VERBOSE=1
+  - make -j
   - ./test/keva-test
 
 
