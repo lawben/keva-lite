@@ -1,5 +1,7 @@
 #include "bp_node.hpp"
 
+#include <algorithm>
+
 namespace keva {
 
 const BPNodeHeader& BPNode::header() const { return _header; }

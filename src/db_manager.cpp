@@ -1,5 +1,7 @@
 #include "db_manager.hpp"
 
+#include <memory>
+
 namespace keva {
 
 DBManager::DBManager(uint16_t value_size, uint16_t max_keys_per_node)

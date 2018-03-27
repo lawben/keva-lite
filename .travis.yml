@@ -1,0 +1,85 @@
+language: cpp
+
+sudo: false
+dist: trusty
+osx_image: xcode9.2
+
+branches:
+  only: master
+
+notifications:
+  email: false
+
+matrix:
+  include:
+    # Linux + clang + debug
+    - os: linux
+      env: CONFIG=Debug
+      addons: &clang5
+        apt:
+          sources:
+          - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+            - libc++-dev
+            - libc++abi-dev
+
+      compiler: clang
+
+    # Linux + clang + release
+    - os: linux
+      addons: *clang5
+      env: CONFIG=Release
+      compiler: clang
+
+# Currently, this throws a memory corruption. Add back when it is fixed.
+#    # Linux + GCC + debug
+#    - os: linux
+#      addons: &gcc7
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - g++-7
+#      env: CONFIG=Debug
+#      compiler: gcc
+#
+#    # Linux + GCC + release
+#    - os: linux
+#      addons: *gcc7
+#      env: CONFIG=Release
+#      compiler: gcc
+
+    # Linux + clang + debug + asan + ubsan
+    - os: linux
+      addons: *clang5
+      env: CONFIG=Debug ENABLE_SANITIZE=ON
+      compiler: clang
+
+    # Linux + clang + release + asan + ubsan
+    - os: linux
+      addons: *clang5
+      env: CONFIG=Release ENABLE_SANITIZE=ON
+      compiler: clang
+
+    # OSX + apple-clang + debug
+    - os: osx
+      compiler: clang
+      env: CONFIG=Debug
+
+    # OSX + apple-clang + release
+    - os: osx
+      compiler: clang
+      env: CONFIG=Release
+
+script:
+  - cd "${TRAVIS_BUILD_DIR}"
+  - mkdir -p build && cd build
+  - cmake -DCMAKE_BUILD_TYPE=${CONFIG} ..
+  - make -j
+  - ./test/keva-test
+
+
+install:
+  - if [[ $CXX = g++ ]]; then export CXX="g++-7" CC="gcc-7"; fi
+  - ${CXX} --version

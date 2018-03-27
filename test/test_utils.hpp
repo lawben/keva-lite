@@ -46,4 +46,4 @@ void print_tree(const BPNode& root, const FileManager& file_manager);
 bool tree_is_valid(const DBManager& db_manager);
 bool subtree_is_valid(const BPNode& node, const FileKey lower, const FileKey upper, const FileManager& file_manager);
 
-};  // namespace keva
+}  // namespace keva

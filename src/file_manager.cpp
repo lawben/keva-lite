@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 namespace keva {
@@ -103,10 +104,10 @@ BPNode FileManager::load_node(const FileOffset offset) const {
 }
 
 void FileManager::write_node_header(const BPNodeHeader& header) {
-  DebugAssert(header.node_id != InvalidNodeID, "Trying to write to invalid offset");
+  Assert(header.node_id != InvalidNodeID, "Trying to write to invalid offset");
 
   _db->seekp(header.node_id);
-  DebugAssert(!_db->fail(), "Failed to set position in output stream.");
+  Assert(!_db->fail(), "Failed to set position in output stream.");
   write_value(header.node_id);
   write_value(header.is_leaf);
   write_value(header.parent_id);

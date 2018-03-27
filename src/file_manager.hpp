@@ -1,6 +1,7 @@
 #pragma once
 
 #include <istream>
+#include <memory>
 #include <string>
 
 #include "bp_node.hpp"
@@ -64,7 +65,7 @@ class FileManager : public Noncopyable {
   const uint16_t _value_size;
   uint16_t _max_keys_per_node;
 
-  const uint32_t _file_flags = std::ios::binary | std::ios::in | std::ios::out;
+  const std::ios::openmode _file_flags = std::ios::binary | std::ios::in | std::ios::out;
 };
 
 template <typename T>
@@ -101,7 +102,7 @@ template <>
 inline uint32_t FileManager::write_value(const bool& value) {
   const auto cast_value = static_cast<uint8_t>(value);
   _db->write(reinterpret_cast<const char*>(&cast_value), sizeof(uint8_t));
-  return 1;
+  return sizeof(uint8_t);
 }
 
 template <typename T>
