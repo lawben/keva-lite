@@ -6,9 +6,10 @@ ExternalProject_Add(
         GIT_REPOSITORY https://github.com/google/googletest.git
         UPDATE_COMMAND ""
         INSTALL_COMMAND ""
-        LOG_DOWNLOAD ON
-        LOG_CONFIGURE ON
-        LOG_BUILD ON)
+        #LOG_DOWNLOAD ON  # enable if there are problems with building googltest
+        #LOG_CONFIGURE ON
+        #LOG_BUILD ON
+)
 
 ExternalProject_Get_Property(googletest source_dir)
 set(GTEST_INCLUDE_DIRS ${source_dir}/googletest/include)
