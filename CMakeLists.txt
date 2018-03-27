@@ -36,6 +36,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_definitions(-DIS_DEBUG=1)
 else()
     add_definitions(-DIS_DEBUG=0)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
 endif()
 
 option(ENABLE_SANITIZE "Set to ON to build with ASAN and UBSAN enabled. Default: OFF" OFF)
